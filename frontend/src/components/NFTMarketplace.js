@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ethers } from "ethers";
 import MyNFTArtifact from "../contracts/MyNFT.json";
 import NFTMarketArtifact from "../contracts/NFTMarket.json";
+import TokenArtifact from "../contracts/Token.json"; // Import Token artifact
 import contractAddress from "../contracts/contract-address.json";
 
 export function NFTMarketplace({
@@ -128,12 +129,12 @@ export function NFTMarketplace({
     e.preventDefault();
     // Retrieve tokenId from hidden field entered by the inline form.
     const tokenId = e.target.tokenId.value;
-    const priceInEth = e.target.price.value;
-    const price = ethers.utils.parseUnits(priceInEth, "ether");
-    // Fixed listing fee (0.001 ether)
-    const listingFee = ethers.utils.parseUnits("0.001", "ether");
+    const priceInput = e.target.price.value; // Price in token units
+    // Since your Token has 0 decimals, use '0' as the unit.
+    const price = ethers.utils.parseUnits(priceInput, 0);
+
     try {
-      // Check if the NFTMarket contract is approved to transfer this token
+      // Check if the NFTMarket contract is approved to transfer this token from NFT contract.
       const approvedAddress = await myNFTContract.getApproved(tokenId);
       if (
         approvedAddress.toLowerCase() !==
@@ -147,15 +148,38 @@ export function NFTMarketplace({
         await approvalTx.wait();
         console.log("Approval complete.");
       }
-      // Now create the market item listing
+
+      // Now check token allowance for listing fee and approve if needed.
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const tokenContract = new ethers.Contract(
+        contractAddress.Token,
+        TokenArtifact.abi,
+        signer
+      );
+      // Listing fee is assumed to be 1 token unit (adjust if needed)
+      const listingFee = ethers.utils.parseUnits("1", 0);
+      const allowance = await tokenContract.allowance(
+        account,
+        nftMarketContract.address
+      );
+      if (allowance.lt(listingFee)) {
+        console.log("Approving token spending for listing fee...");
+        const approveTx = await tokenContract.approve(
+          nftMarketContract.address,
+          listingFee
+        );
+        await approveTx.wait();
+        console.log("Token spending approved.");
+      }
+
+      // Now call createMarketItem without passing any ETH value override.
       const tx = await nftMarketContract.createMarketItem(
         contractAddress.MyNFT,
         tokenId,
-        price,
-        { value: listingFee }
+        price
       );
       await tx.wait();
-      // After listing, remove inline form for that token.
       setSelectedForListing("");
       loadAllNFTs();
     } catch (err) {
@@ -180,12 +204,12 @@ export function NFTMarketplace({
   }
 
   // Buy an NFT at the asking price.
-  async function buyNFT(itemId, priceInEth) {
-    const price = ethers.utils.parseUnits(priceInEth, "ether");
+  async function buyNFT(itemId, priceInput) {
+    // Convert price from token units (since decimals = 0)
+    const price = ethers.utils.parseUnits(priceInput, 0);
     try {
-      const tx = await nftMarketContract.purchaseMarketItem(itemId, {
-        value: price,
-      });
+      // Call purchaseMarketItem without sending any ETH override.
+      const tx = await nftMarketContract.purchaseMarketItem(itemId);
       await tx.wait();
       loadAllNFTs();
     } catch (err) {
@@ -297,7 +321,7 @@ export function NFTMarketplace({
                     <input type="hidden" name="tokenId" value={nft.tokenId} />
                     <input
                       name="price"
-                      placeholder="Price in ETH"
+                      placeholder="Price in MHT"
                       required
                       style={{ marginRight: "0.5rem" }}
                     />
@@ -323,12 +347,12 @@ export function NFTMarketplace({
                   Listed by:{" "}
                   {nft.seller.slice(0, 6) + "..." + nft.seller.slice(-4)}
                 </p>
-                <p>Price: {nft.price} ETH</p>
+                <p>Price: {nft.price} MHT</p>
                 {account && nft.seller.toLowerCase() !== account.toLowerCase() && (
                   <div>
                     <input
                       type="text"
-                      placeholder="Your bid in ETH"
+                      placeholder="Your bid in MHT"
                       value={bids[nft.tokenId] || ""}
                       onChange={(e) =>
                         setBids({ ...bids, [nft.tokenId]: e.target.value })

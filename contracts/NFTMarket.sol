@@ -1,43 +1,37 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract NFTMarket is ReentrancyGuard {
     using Counters for Counters.Counter;
 
-    // Counters to track total items and items sold
+    // Counters for the items and items sold
     Counters.Counter private _itemIds;
     Counters.Counter private _itemsSold;
 
-    // Contract owner gets a listing fee for every NFT listed
-    address payable owner;
-    uint256 listingPrice = 0.001 ether;
+    // The marketplace owner receives the listing fee in tokens
+    address payable public owner;
+    // Listing fee (expressed in token base units—for example, if token uses 18 decimals, 1 token = 1e18)
+    uint256 public listingFee;
 
-    constructor() {
-        owner = payable(msg.sender);
-    }
+    // The ERC20 token used for payments
+    IERC20 public paymentToken;
 
     struct Marketitem {
         uint itemId;
         address nftContract;
         uint256 tokenId;
         address payable seller;
-        address payable owner;
-        uint256 price;
+        address payable owner; // becomes buyer after purchase
+        uint256 price; // Price denominated in your ERC20 token units
         bool sold;
     }
 
-    struct Bid {
-        address payable bidder;
-        uint256 bidPrice;
-        bool exists;
-    }
-
     mapping(uint256 => Marketitem) private idToMarketItem;
-    mapping(uint256 => Bid) public itemBids;
 
     event MarketItemCreated(
         uint256 indexed itemId,
@@ -49,11 +43,6 @@ contract NFTMarket is ReentrancyGuard {
         bool sold
     );
 
-    event MarketItemBid(
-        uint256 indexed itemId,
-        address bidder,
-        uint256 bidPrice
-    );
     event MarketItemSold(
         uint256 indexed itemId,
         address indexed nftContract,
@@ -63,27 +52,37 @@ contract NFTMarket is ReentrancyGuard {
         uint256 price
     );
 
+    constructor(address tokenAddress, uint256 _listingFee) {
+        owner = payable(msg.sender);
+        paymentToken = IERC20(tokenAddress);
+        listingFee = _listingFee;
+    }
+
+    /// @notice List an NFT for sale. The seller must have approved NFTMarket to spend at least listingFee tokens.
     function createMarketItem(
         address nftContract,
         uint256 tokenId,
         uint256 price
-    ) public payable nonReentrant {
-        require(price > 0, "Price must be at least 1 wei");
+    ) public nonReentrant {
+        require(price > 0, "Price must be greater than zero");
+
+        // Pull the listing fee from the seller.
+        // Seller must call Token.approve(nftMarketAddress, listingFee) beforehand.
         require(
-            msg.value == listingPrice,
-            "Price must be equal to listing fee"
+            paymentToken.transferFrom(msg.sender, owner, listingFee),
+            "Listing fee transfer failed"
         );
 
-        // Verify that the seller has approved the marketplace.
+        // Require NFT approval on the NFT contract.
         require(
             IERC721(nftContract).getApproved(tokenId) == address(this),
-            "Marketplace is not approved to manage this token"
+            "Marketplace is not approved to manage this NFT"
         );
 
         _itemIds.increment();
         uint256 itemId = _itemIds.current();
 
-        // Do not transfer NFT; simply record the listing.
+        // Record the new market item (no transfer of NFT until sale)
         idToMarketItem[itemId] = Marketitem(
             itemId,
             nftContract,
@@ -93,6 +92,7 @@ contract NFTMarket is ReentrancyGuard {
             price,
             false
         );
+
         emit MarketItemCreated(
             itemId,
             nftContract,
@@ -104,136 +104,66 @@ contract NFTMarket is ReentrancyGuard {
         );
     }
 
-    // Place a bid on a market item.
-    function bidOnItem(uint256 itemId) public payable nonReentrant {
+    /// @notice Purchase an NFT by paying the sale price in tokens.
+    /// Buyer must call Token.approve(nftMarketAddress, itemPrice) before purchasing.
+    function purchaseMarketItem(uint256 itemId) public nonReentrant {
         Marketitem storage item = idToMarketItem[itemId];
         require(item.itemId > 0, "Item does not exist");
-        require(item.sold == false, "Item already sold");
+        require(!item.sold, "Item already sold");
+
+        // Pull payment from buyer to seller.
         require(
-            msg.value > item.price,
-            "Bid must be higher than listing price"
+            paymentToken.transferFrom(msg.sender, item.seller, item.price),
+            "Payment failed"
         );
-        if (itemBids[itemId].exists) {
-            require(
-                msg.value > itemBids[itemId].bidPrice,
-                "Must bid higher than current bid"
-            );
-            // Refund previous bid.
-            itemBids[itemId].bidder.transfer(itemBids[itemId].bidPrice);
-        }
-        itemBids[itemId] = Bid(payable(msg.sender), msg.value, true);
-        emit MarketItemBid(itemId, msg.sender, msg.value);
-    }
 
-    // Seller accepts the highest bid.
-    function acceptBid(uint256 itemId) public nonReentrant {
-        Marketitem storage item = idToMarketItem[itemId];
-        require(item.itemId > 0, "Item does not exist");
-        require(item.sold == false, "Item already sold");
-        require(item.seller == msg.sender, "Only seller can accept bid");
-        Bid storage bid = itemBids[itemId];
-        require(bid.exists, "No bid exists");
-
-        // Pull NFT from seller.
-        IERC721(item.nftContract).transferFrom(
-            item.seller,
-            bid.bidder,
-            item.tokenId
-        );
-        // Transfer bid amount to seller.
-        item.seller.transfer(bid.bidPrice);
-        item.owner = bid.bidder;
-        item.sold = true;
-        _itemsSold.increment();
-        emit MarketItemSold(
-            itemId,
-            item.nftContract,
-            item.tokenId,
-            item.seller,
-            bid.bidder,
-            bid.bidPrice
-        );
-    }
-
-    // Purchase the market item at the asking price.
-    function purchaseMarketItem(uint256 itemId) public payable nonReentrant {
-        Marketitem storage item = idToMarketItem[itemId];
-        require(item.itemId > 0, "Item does not exist");
-        require(item.sold == false, "Item already sold");
-        require(msg.value == item.price, "Please submit the asking price");
-
-        // Transfer funds to the seller.
-        item.seller.transfer(msg.value);
-        // Pull NFT from the seller (seller must keep approval active until sale completion).
+        // Transfer the NFT from seller to buyer.
         IERC721(item.nftContract).transferFrom(
             item.seller,
             msg.sender,
             item.tokenId
         );
 
-        // Mark the item as sold.
+        // Update the market item record.
         item.owner = payable(msg.sender);
         item.sold = true;
         _itemsSold.increment();
 
         emit MarketItemSold(
-            itemId,
+            item.itemId,
             item.nftContract,
             item.tokenId,
             item.seller,
             msg.sender,
-            msg.value
+            item.price
         );
-
-        // Optional: Delete the listing so that subsequent calls to fetchActiveMarketItems won't return it.
-        // delete idToMarketItem[itemId];
     }
 
-    // Cancel a market item listing.
-    function cancelMarketItem(uint256 itemId) public nonReentrant {
-        Marketitem storage item = idToMarketItem[itemId];
-        require(item.itemId > 0, "Item does not exist");
-        require(item.seller == msg.sender, "Only seller can cancel listing");
-        require(item.sold == false, "Item already sold");
-
-        // Refund an outstanding bid, if any.
-        if (itemBids[itemId].exists) {
-            itemBids[itemId].bidder.transfer(itemBids[itemId].bidPrice);
-            delete itemBids[itemId];
-        }
-
-        // Remove the listing.
-        delete idToMarketItem[itemId];
-
-        // Optionally emit an event for cancellation.
-        // emit MarketItemCancelled(itemId, msg.sender);
-    }
-
+    /// @notice Fetch all active (unsold) market items.
     function fetchActiveMarketItems()
         public
         view
         returns (Marketitem[] memory)
     {
-        uint totalItemCount = _itemIds.current();
-        uint activeItemCount = 0;
-        // Count active items: those not sold and still listed (i.e. owner is address(0))
+        uint256 totalItemCount = _itemIds.current();
+        uint256 activeItemCount = 0;
+
         for (uint i = 1; i <= totalItemCount; i++) {
             if (
-                idToMarketItem[i].sold == false &&
-                idToMarketItem[i].owner == address(0)
+                !idToMarketItem[i].sold && idToMarketItem[i].owner == address(0)
             ) {
-                activeItemCount += 1;
+                activeItemCount++;
             }
         }
+
         Marketitem[] memory items = new Marketitem[](activeItemCount);
-        uint currentIndex = 0;
+        uint256 currentIndex = 0;
         for (uint i = 1; i <= totalItemCount; i++) {
             if (
-                idToMarketItem[i].sold == false &&
-                idToMarketItem[i].owner == address(0)
+                !idToMarketItem[i].sold && idToMarketItem[i].owner == address(0)
             ) {
                 items[currentIndex] = idToMarketItem[i];
-                currentIndex += 1;
+                currentIndex++;
             }
         }
         return items;

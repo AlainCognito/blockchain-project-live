@@ -34,8 +34,10 @@ async function main() {
 
   console.log("MyNFT deployed to:", myNFT.address);
 
+  const fee = 1;
+
   const NFTMarket = await ethers.getContractFactory("NFTMarket");
-  const nftMarket = await NFTMarket.deploy();
+  const nftMarket = await NFTMarket.deploy(token.address,fee );
   await nftMarket.deployed();
   console.log("NFTMarket deployed to:", nftMarket.address);
 
