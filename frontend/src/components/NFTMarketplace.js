@@ -103,10 +103,9 @@ export function NFTMarketplace({
         const tokenId = item.tokenId.toString();
         listings[tokenId] = {
           seller: item.seller.toLowerCase(),
-          price: ethers.utils.formatUnits(item.price, "ether"),
+          // Use 0 decimals conversion instead of "ether"
+          price: ethers.utils.formatUnits(item.price, 0),
           itemId: item.itemId.toString(),
-          // Optionally include bid info if your contract supports it
-          // bid: { ... }
         };
       }
 
@@ -205,10 +204,32 @@ export function NFTMarketplace({
 
   // Buy an NFT at the asking price.
   async function buyNFT(itemId, priceInput) {
-    // Convert price from token units (since decimals = 0)
+    // Convert price from token units using 0 decimals (since your token has 0 decimals)
     const price = ethers.utils.parseUnits(priceInput, 0);
     try {
-      // Call purchaseMarketItem without sending any ETH override.
+      // Create a token contract instance
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const tokenContract = new ethers.Contract(
+        contractAddress.Token,
+        TokenArtifact.abi,
+        signer
+      );
+      // Check if the buyer has approved enough tokens for NFTMarket to pull the purchase price.
+      const buyerAllowance = await tokenContract.allowance(
+        account,
+        nftMarketContract.address
+      );
+      if (buyerAllowance.lt(price)) {
+        console.log("Approving token spending for purchase price...");
+        const approveTx = await tokenContract.approve(
+          nftMarketContract.address,
+          price
+        );
+        await approveTx.wait();
+        console.log("Approval for purchase price complete.");
+      }
+      // Now call purchaseMarketItem without any ETH value override.
       const tx = await nftMarketContract.purchaseMarketItem(itemId);
       await tx.wait();
       loadAllNFTs();
