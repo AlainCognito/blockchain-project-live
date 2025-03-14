@@ -1,6 +1,7 @@
 import React from "react";
 // We'll use ethers to interact with the Ethereum network and our contract
 import { ethers } from "ethers";
+import { Link } from "react-router-dom";
 
 // We import the contract's artifacts and address here, as we are going to be
 // using them with ethers
@@ -59,6 +60,33 @@ export class Dapp extends React.Component {
     this.state = this.initialState;
   }
 
+  async componentDidMount() {
+    if (window.ethereum) {
+      // Add a listener for account changes
+      window.ethereum.on("accountsChanged", this.handleAccountsChanged);
+
+      // Check if an account is already connected
+      const accounts = await window.ethereum.request({
+        method: "eth_accounts",
+      });
+      if (accounts.length > 0) {
+        // Initialize the app with the connected account.
+        this._initialize(accounts[0]);
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    // Remove the accountsChanged listener
+    if (window.ethereum && window.ethereum.removeListener) {
+      window.ethereum.removeListener(
+        "accountsChanged",
+        this.handleAccountsChanged
+      );
+    }
+    this._stopPollingData();
+  }
+
   render() {
     // Ethereum wallets inject the window.ethereum object. If it hasn't been
     // injected, we instruct the user to install a wallet.
@@ -91,7 +119,6 @@ export class Dapp extends React.Component {
 
     // If everything is loaded, we render the application.
     return (
-      
       <div className="container p-4">
         <div className="row">
           <div className="col-12">
@@ -172,48 +199,40 @@ export class Dapp extends React.Component {
           <TransferNFT
             transferNFT={(to, tokenId) => this._transferNFT(to, tokenId)}
             tokenId={this.state.selectedTokenId}
-            />
+          />
         </div>
+        <Link
+          to="/nft-marketplace"
+          state={{
+            account: this.state.selectedAddress,
+          }}
+          className="btn btn-primary"
+        >
+          Visit NFT Marketplace
+        </Link>
       </div>
     );
   }
 
-  componentWillUnmount() {
-    // We poll the user's balance, so we have to stop doing that when Dapp
-    // gets unmounted
+  // New method to handle account changes
+  handleAccountsChanged = (accounts) => {
     this._stopPollingData();
-  }
+    if (accounts.length === 0) {
+      // No account connected, reset the state
+      this._resetState();
+    } else {
+      // Reinitialize with the new account
+      this._initialize(accounts[0]);
+    }
+  };
 
   async _connectWallet() {
-    // This method is run when the user clicks the Connect. It connects the
-    // dapp to the user's wallet, and initializes it.
-
-    // To connect to the user's wallet, we have to run this method.
-    // It returns a promise that will resolve to the user's address.
+    // When user clicks Connect, request accounts and let the listener do the rest
     const [selectedAddress] = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
-
-    // Once we have the address, we can initialize the application.
-
-    // First we check the network
     this._checkNetwork();
-
     this._initialize(selectedAddress);
-
-    // We reinitialize it whenever the user changes their account.
-    window.ethereum.on("accountsChanged", ([newAddress]) => {
-      this._stopPollingData();
-      // `accountsChanged` event can be triggered with an undefined newAddress.
-      // This happens when the user removes the Dapp from the "Connected
-      // list of sites allowed access to your addresses" (Metamask > Settings > Connections)
-      // To avoid errors, we reset the dapp state
-      if (newAddress === undefined) {
-        return this._resetState();
-      }
-
-      this._initialize(newAddress);
-    });
   }
 
   _initialize(userAddress) {
