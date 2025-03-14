@@ -205,6 +205,7 @@ export class Dapp extends React.Component {
           to="/nft-marketplace"
           state={{
             account: this.state.selectedAddress,
+            
           }}
           className="btn btn-primary"
         >

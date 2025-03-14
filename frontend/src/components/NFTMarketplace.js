@@ -1,70 +1,232 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ethers } from "ethers";
 import MyNFTArtifact from "../contracts/MyNFT.json";
+import NFTMarketArtifact from "../contracts/NFTMarket.json";
 import contractAddress from "../contracts/contract-address.json";
 
-export function NFTMarketplace() {
-  const [nfts, setNFTs] = useState([]);
+export function NFTMarketplace({
+  myNFTContract: dappMyNFT,
+  account: dappAccount,
+}) {
+  const location = useLocation();
+  const initialAccount =
+    dappAccount || (location.state && location.state.account) || null;
+  const initialMyNFT =
+    dappMyNFT || (location.state && location.state.myNFTContract) || null;
+  const [nfts, setNfts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [account, setAccount] = useState(null);
-  const [myNFTContract, setMyNFTContract] = useState(null);
+  const [account, setAccount] = useState(initialAccount);
+  const [myNFTContract, setMyNFTContract] = useState(initialMyNFT);
+  const [nftMarketContract, setNftMarketContract] = useState(null);
+  const [bids, setBids] = useState({}); // bid amounts keyed by tokenId or itemId
+  const [selectedForListing, setSelectedForListing] = useState(""); // tokenId selected to list
 
-  // Helper to initialize the contract and get the account
-  async function initializeContract() {
+  // Initialize contracts – always initialize NFTMarket; use dApp-provided MyNFT if available.
+  async function initializeContracts() {
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       try {
-        // First check if an account is already connected
         let accounts = await provider.send("eth_accounts", []);
         if (accounts.length === 0) {
-          // If not, request connection
           accounts = await provider.send("eth_requestAccounts", []);
         }
         setAccount(accounts[0]);
-
-        const contract = new ethers.Contract(
-          contractAddress.MyNFT, // contract address for MyNFT
-          MyNFTArtifact.abi, // contract ABI
-          provider.getSigner(0)
+        const signer = provider.getSigner(accounts[0]);
+        if (!myNFTContract) {
+          const myNFT = new ethers.Contract(
+            contractAddress.MyNFT,
+            MyNFTArtifact.abi,
+            signer
+          );
+          setMyNFTContract(myNFT);
+        }
+        const nftMarket = new ethers.Contract(
+          contractAddress.NFTMarket,
+          NFTMarketArtifact.abi,
+          signer
         );
-        setMyNFTContract(contract);
+        setNftMarketContract(nftMarket);
       } catch (error) {
-        console.error("Error initializing contract:", error);
+        console.error("Error initializing contracts:", error);
       }
     }
   }
 
-  // Initial load on mount
-  useEffect(() => {
-    initializeContract();
-  }, []);
+  // Load all minted NFTs using Transfer events (from zero address)
+  async function loadAllNFTs() {
+    if (!myNFTContract || !nftMarketContract) return;
+    setLoading(true);
+    try {
+      // 1. Get minted NFTs from Transfer events (mint events: from zero address)
+      const mintFilter = myNFTContract.filters.Transfer(
+        ethers.constants.AddressZero,
+        null
+      );
+      const mintEvents = await myNFTContract.queryFilter(mintFilter);
+      const mintedItems = [];
+      for (const event of mintEvents) {
+        const tokenId = event.args.tokenId.toString();
+        let tokenURI = "";
+        try {
+          tokenURI = await myNFTContract.tokenURI(tokenId);
+        } catch (err) {
+          console.error(`Error fetching tokenURI for token ${tokenId}:`, err);
+        }
+        let metadata = {};
+        try {
+          const res = await fetch(tokenURI);
+          metadata = await res.json();
+        } catch (err) {
+          console.error(`Error fetching metadata for token ${tokenId}:`, err);
+        }
+        let owner = "";
+        try {
+          owner = (await myNFTContract.ownerOf(tokenId)).toLowerCase();
+        } catch (err) {
+          console.error(`Error fetching owner for token ${tokenId}:`, err);
+        }
+        mintedItems.push({
+          tokenId,
+          tokenURI,
+          owner,
+          ...metadata,
+        });
+      }
 
-  // Reload NFTs when the contract (and thereby account) changes
-  useEffect(() => {
-    if (myNFTContract) {
-      loadAllNFTs();
+      // 2. Get active marketplace listings using the new fetch function.
+      const listingsArray = await nftMarketContract.fetchActiveMarketItems();
+      // Build a mapping of tokenId => listing data.
+      const listings = {};
+      for (const item of listingsArray) {
+        const tokenId = item.tokenId.toString();
+        listings[tokenId] = {
+          seller: item.seller.toLowerCase(),
+          price: ethers.utils.formatUnits(item.price, "ether"),
+          itemId: item.itemId.toString(),
+          // Optionally include bid info if your contract supports it
+          // bid: { ... }
+        };
+      }
+
+      // 3. Merge listings into minted items (if an NFT is listed, add marketplace data)
+      const mergedItems = mintedItems.map((nft) => {
+        if (listings[nft.tokenId]) {
+          return { ...nft, ...listings[nft.tokenId] };
+        }
+        return nft;
+      });
+      setNfts(mergedItems);
+    } catch (error) {
+      console.error("Error loading minted NFTs:", error);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [myNFTContract]);
+    setLoading(false);
+  }
 
-  // Listen for account changes and auto-reload the page accordingly
+  // List an NFT for sale.
+  async function listNFT(e) {
+    e.preventDefault();
+    // Retrieve tokenId from hidden field entered by the inline form.
+    const tokenId = e.target.tokenId.value;
+    const priceInEth = e.target.price.value;
+    const price = ethers.utils.parseUnits(priceInEth, "ether");
+    // Fixed listing fee (0.001 ether)
+    const listingFee = ethers.utils.parseUnits("0.001", "ether");
+    try {
+      // Check if the NFTMarket contract is approved to transfer this token
+      const approvedAddress = await myNFTContract.getApproved(tokenId);
+      if (
+        approvedAddress.toLowerCase() !==
+        nftMarketContract.address.toLowerCase()
+      ) {
+        console.log("Approving NFT for marketplace...");
+        const approvalTx = await myNFTContract.approve(
+          nftMarketContract.address,
+          tokenId
+        );
+        await approvalTx.wait();
+        console.log("Approval complete.");
+      }
+      // Now create the market item listing
+      const tx = await nftMarketContract.createMarketItem(
+        contractAddress.MyNFT,
+        tokenId,
+        price,
+        { value: listingFee }
+      );
+      await tx.wait();
+      // After listing, remove inline form for that token.
+      setSelectedForListing("");
+      loadAllNFTs();
+    } catch (err) {
+      console.error("Error listing NFT:", err);
+    }
+  }
+
+  // Place a bid on a listed item.
+  async function placeBid(itemId) {
+    const bidAmountEth = bids[itemId];
+    if (!bidAmountEth) return;
+    const bidAmount = ethers.utils.parseUnits(bidAmountEth, "ether");
+    try {
+      const tx = await nftMarketContract.bidOnItem(itemId, {
+        value: bidAmount,
+      });
+      await tx.wait();
+      loadAllNFTs();
+    } catch (err) {
+      console.error("Error placing bid:", err);
+    }
+  }
+
+  // Buy an NFT at the asking price.
+  async function buyNFT(itemId, priceInEth) {
+    const price = ethers.utils.parseUnits(priceInEth, "ether");
+    try {
+      const tx = await nftMarketContract.purchaseMarketItem(itemId, {
+        value: price,
+      });
+      await tx.wait();
+      loadAllNFTs();
+    } catch (err) {
+      console.error("Error buying NFT:", err);
+    }
+  }
+
+  // Seller accepts the current bid.
+  async function acceptBid(itemId) {
+    try {
+      const tx = await nftMarketContract.acceptBid(itemId);
+      await tx.wait();
+      loadAllNFTs();
+    } catch (err) {
+      console.error("Error accepting bid:", err);
+    }
+  }
+
+  async function cancelListing(itemId) {
+    try {
+      const tx = await nftMarketContract.cancelMarketItem(itemId);
+      await tx.wait();
+      loadAllNFTs();
+    } catch (err) {
+      console.error("Error canceling listing:", err);
+    }
+  }
+
+  // Listen for account changes.
   useEffect(() => {
     if (window.ethereum) {
       const handleAccountsChanged = (accounts) => {
         if (accounts.length === 0) {
-          // User has disconnected their account
           setAccount(null);
-          setNFTs([]);
+          setNfts([]);
         } else {
-          // Update account and reinitialize the contract
           setAccount(accounts[0]);
-          initializeContract();
+          initializeContracts();
         }
       };
-
       window.ethereum.on("accountsChanged", handleAccountsChanged);
-      // Cleanup on unmount
       return () => {
         if (window.ethereum.removeListener) {
           window.ethereum.removeListener(
@@ -76,76 +238,26 @@ export function NFTMarketplace() {
     }
   }, []);
 
-  async function loadAllNFTs() {
-    setLoading(true);
-    try {
-      // Query all mint events (Transfer from the zero address)
-      const mintFilter = myNFTContract.filters.Transfer(
-        "0x0000000000000000000000000000000000000000"
-      );
-      const mintEvents = await myNFTContract.queryFilter(mintFilter);
+  useEffect(() => {
+    initializeContracts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-      // Extract unique token IDs from these events
-      const tokenIdsSet = new Set();
-      mintEvents.forEach((event) => {
-        tokenIdsSet.add(event.args.tokenId.toString());
-      });
-      const tokenIds = Array.from(tokenIdsSet);
-
-      const items = [];
-      for (const tokenId of tokenIds) {
-        try {
-          const owner = await myNFTContract.ownerOf(tokenId);
-          const tokenURI = await myNFTContract.tokenURI(tokenId);
-          let metadata = {};
-          try {
-            const res = await fetch(tokenURI);
-            metadata = await res.json();
-          } catch (err) {
-            console.error(`Error fetching metadata for token ${tokenId}:`, err);
-          }
-          items.push({
-            tokenId,
-            owner,
-            tokenURI,
-            ...metadata,
-          });
-        } catch (error) {
-          console.error(`Error fetching details for token ${tokenId}:`, error);
-        }
-      }
-      setNFTs(items);
-    } catch (error) {
-      console.error("Error loading marketplace NFTs:", error);
+  useEffect(() => {
+    if (nftMarketContract && myNFTContract) {
+      loadAllNFTs();
     }
-    setLoading(false);
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nftMarketContract, myNFTContract]);
 
   if (loading) {
     return <div>Loading NFT Marketplace...</div>;
   }
 
-  if (nfts.length === 0) {
-    return (
-      <div>
-        <div>No NFTs have been minted.</div>
-        <Link to="/" className="btn btn-primary">
-          Return Home
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div>
       <h2>NFT Marketplace</h2>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "1rem",
-        }}
-      >
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
         {nfts.map((nft) => (
           <div
             key={nft.tokenId}
@@ -166,34 +278,92 @@ export function NFTMarketplace() {
             )}
             <p>
               Owner:{" "}
-              {nft.owner.slice(0, 6) +
-                "..." +
-                nft.owner.slice(nft.owner.length - 4)}
+              {nft.owner
+                ? nft.owner.slice(0, 6) + "..." + nft.owner.slice(-4)
+                : "Unknown"}
             </p>
-            {account && nft.owner.toLowerCase() !== account.toLowerCase() && (
+            {/*
+              If there's no marketplace listing (nft.seller undefined) and you own it,
+              show the option to list.
+            */}
+            {nft.owner === account?.toLowerCase() && !nft.seller && (
+              <>
+                {selectedForListing !== nft.tokenId ? (
+                  <button onClick={() => setSelectedForListing(nft.tokenId)}>
+                    List NFT for Sale
+                  </button>
+                ) : (
+                  <form onSubmit={listNFT}>
+                    <input type="hidden" name="tokenId" value={nft.tokenId} />
+                    <input
+                      name="price"
+                      placeholder="Price in ETH"
+                      required
+                      style={{ marginRight: "0.5rem" }}
+                    />
+                    <button type="submit">Submit Listing</button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedForListing("")}
+                      style={{ marginLeft: "0.5rem" }}
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                )}
+              </>
+            )}
+            {/*
+              If the NFT is listed, then show the marketplace info.
+              Note: even if you are the owner and have already listed the NFT, don't show the "List" option again.
+            */}
+            {nft.seller && (
               <div>
-                <button onClick={() => console.log("Bid for", nft.tokenId)}>
-                  Place Bid
-                </button>
-                <button onClick={() => console.log("Buy", nft.tokenId)}>
-                  Buy NFT
-                </button>
+                <p>
+                  Listed by:{" "}
+                  {nft.seller.slice(0, 6) + "..." + nft.seller.slice(-4)}
+                </p>
+                <p>Price: {nft.price} ETH</p>
+                {account && nft.seller.toLowerCase() !== account.toLowerCase() && (
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Your bid in ETH"
+                      value={bids[nft.tokenId] || ""}
+                      onChange={(e) =>
+                        setBids({ ...bids, [nft.tokenId]: e.target.value })
+                      }
+                      style={{ marginBottom: "0.5rem" }}
+                    />
+                    <button onClick={() => placeBid(nft.itemId)}>
+                      Place Bid
+                    </button>
+                    <button onClick={() => buyNFT(nft.itemId, nft.price)}>
+                      Buy NFT
+                    </button>
+                  </div>
+                )}
+                {account && nft.seller.toLowerCase() === account.toLowerCase() && (
+                  <div>
+                    <p>You listed this NFT</p>
+                    <button onClick={() => cancelListing(nft.itemId)}>
+                      Cancel Listing
+                    </button>
+                  </div>
+                )}
               </div>
             )}
-            {account && nft.owner.toLowerCase() === account.toLowerCase() && (
-              <p>You own this NFT</p>
+            {/*
+              For NFTs that are not listed and not owned by the user, just display a message.
+            */}
+            {!nft.seller && nft.owner !== account?.toLowerCase() && (
+              <p>Not listed for sale</p>
             )}
           </div>
         ))}
       </div>
       <br />
-      <Link
-        to="/"
-        state={{
-          account: account,
-        }}
-        className="btn btn-primary"
-      >
+      <Link to="/" state={{ account }} className="btn btn-primary">
         Return Home
       </Link>
     </div>

@@ -34,12 +34,16 @@ async function main() {
 
   console.log("MyNFT deployed to:", myNFT.address);
 
+  const NFTMarket = await ethers.getContractFactory("NFTMarket");
+  const nftMarket = await NFTMarket.deploy();
+  await nftMarket.deployed();
+  console.log("NFTMarket deployed to:", nftMarket.address);
 
   // We also save the contract's artifacts and address in the frontend directory
-  saveFrontendFiles(token,myNFT);
+  saveFrontendFiles(token, myNFT, nftMarket);
 }
 
-function saveFrontendFiles(token,myNFT) {
+function saveFrontendFiles(token, myNFT, nftMarket) {
   const fs = require("fs");
   const contractsDir = path.join(
     __dirname,
@@ -55,7 +59,15 @@ function saveFrontendFiles(token,myNFT) {
 
   fs.writeFileSync(
     path.join(contractsDir, "contract-address.json"),
-    JSON.stringify({ Token: token.address, MyNFT : myNFT.address }, undefined, 2)
+    JSON.stringify(
+      {
+        Token: token.address,
+        MyNFT: myNFT.address,
+        NFTMarket: nftMarket.address,
+      },
+      undefined,
+      2
+    )
   );
 
   const TokenArtifact = artifacts.readArtifactSync("Token");
@@ -70,7 +82,14 @@ function saveFrontendFiles(token,myNFT) {
   fs.writeFileSync(
     path.join(contractsDir, "MyNFT.json"),
     JSON.stringify(MyNFTArtifact, null, 2)
-);
+  );
+
+  const NFTMarketArtifact = artifacts.readArtifactSync("NFTMarket");
+
+  fs.writeFileSync(
+    path.join(contractsDir, "NFTMarket.json"),
+    JSON.stringify(NFTMarketArtifact, null, 2)
+  );
 }
 
 main()
