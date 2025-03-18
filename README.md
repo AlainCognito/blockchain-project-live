@@ -29,7 +29,7 @@ npm run hardhat:node
 
 Open [Vercel app](https://blockchain-project-live.vercel.app/). You will
 need to have [Coinbase Wallet](https://www.coinbase.com/wallet) or [Metamask](https://metamask.io) installed and listening to
-`localhost 8545`.
+`ngrok address`.
 
 ## User Guide
 
@@ -67,4 +67,6 @@ This project also includes [a sample frontend/Dapp](./frontend), which uses [Cre
 
 ## TODO LIST
 
--[] Figure out a way to host private blockchain node, and link metamask wallet to it
+-[x] Figure out a way to host private blockchain node, and link metamask wallet to it 
+**The App works great with multiple clients **
+-[] Next step is building correct logic behind nft minting, giving some MHT to first connexions, making bids and auctions work...
