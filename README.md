@@ -88,4 +88,4 @@ For the latest news about Hardhat, [follow us on Twitter](https://twitter.com/Ha
 
 **Happy _building_!**
 
-I love Vercel
+I really love Vercel
