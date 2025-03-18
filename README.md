@@ -19,24 +19,26 @@ git clone https://gitlab.telecomnancy.univ-lorraine.fr/projets/2425/darkduck25/g
 cd groupe08
 npm install
 ```
+
 Then install frontend dependencies:
 
 ```sh
 cd frontend
 npm install
 ```
+
 Can launch hardhat test node and frontend with dev job:
 
 ```sh
 cd groupe08
 npm run dev
 ```
+
 Then deploy smart contracts to local test node :
 
 ```sh
 npm run deploy
 ```
-
 
 Open [http://localhost:3000/](http://localhost:3000/) to see your Dapp. You will
 need to have [Coinbase Wallet](https://www.coinbase.com/wallet) or [Metamask](https://metamask.io) installed and listening to
@@ -85,3 +87,5 @@ If you need help with this project, or with Hardhat in general, please read [thi
 For the latest news about Hardhat, [follow us on Twitter](https://twitter.com/HardhatHQ), and don't forget to star [our GitHub repository](https://github.com/NomicFoundation/hardhat)!
 
 **Happy _building_!**
+
+I love Vercel
