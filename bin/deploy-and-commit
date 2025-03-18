@@ -1,0 +1,22 @@
+#!/bin/bash
+# filepath: /home/alexis/Documents/Blockchain/groupe08/deploy-and-commit.sh
+
+# Exit if any command fails
+set -e
+
+echo "Running deploy script..."
+npx hardhat run scripts/deploy.js --network localhost
+
+# Check for changes to our contract artifacts (adjust file paths if needed)
+echo "Checking for artifact changes..."
+CHANGED_FILES=$(git status --porcelain frontend/src/contracts/contract-address.json frontend/src/contracts/Token.json frontend/src/contracts/MyNFT.json frontend/src/contracts/NFTMarket.json)
+
+if [ -n "$CHANGED_FILES" ]; then
+  echo "Artifact changes detected, committing and pushing to master..."
+  git add frontend/src/contracts/contract-address.json frontend/src/contracts/Token.json frontend/src/contracts/MyNFT.json frontend/src/contracts/NFTMarket.json
+  git commit -m "chore: update deployed contract addresses"
+  git push github master
+  echo "Commit and push complete."
+else
+  echo "No changes in contract artifacts. Nothing to commit."
+fi
