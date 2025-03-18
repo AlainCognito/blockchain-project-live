@@ -15,31 +15,28 @@ The first things you need to do are cloning this repository and installing its
 dependencies:
 
 ```sh
-git clone https://github.com/NomicFoundation/hardhat-boilerplate.git
-cd hardhat-boilerplate
+git clone https://gitlab.telecomnancy.univ-lorraine.fr/projets/2425/darkduck25/groupe08
+cd groupe08
 npm install
 ```
-
-Once installed, let's run Hardhat's testing network:
-
-```sh
-npx hardhat node
-```
-
-Then, on a new terminal, go to the repository's root folder and run this to
-deploy your contract:
-
-```sh
-npx hardhat run scripts/deploy.js --network localhost
-```
-
-Finally, we can run the frontend with:
+Then install frontend dependencies:
 
 ```sh
 cd frontend
 npm install
-npm start
 ```
+Can launch hardhat test node and frontend with dev job:
+
+```sh
+cd groupe08
+npm run dev
+```
+Then deploy smart contracts to local test node :
+
+```sh
+npm run deploy
+```
+
 
 Open [http://localhost:3000/](http://localhost:3000/) to see your Dapp. You will
 need to have [Coinbase Wallet](https://www.coinbase.com/wallet) or [Metamask](https://metamask.io) installed and listening to
