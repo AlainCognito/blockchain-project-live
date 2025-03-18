@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.2.0",
-    "@remix-run/dev": "2.16.1"
+    "@remix-run/dev": "^2.16.1"
   },
   "main": "hardhat.config.js",
   "directories": {
