@@ -20,27 +20,14 @@ cd groupe08
 npm install
 ```
 
-Then install frontend dependencies:
+Then you need to run a local node, and deploy contracts using the bin/deploy-and-commit wrapper that commits and pushes to github master so vercel redeploys using correct contract-addresses:
 
 ```sh
-cd frontend
-npm install
+npm run hardhat:node
+./bin/deploy-and-commit
 ```
 
-Can launch hardhat test node and frontend with dev job:
-
-```sh
-cd groupe08
-npm run dev
-```
-
-Then deploy smart contracts to local test node :
-
-```sh
-npm run deploy
-```
-
-Open [http://localhost:3000/](http://localhost:3000/) to see your Dapp. You will
+Open [Vercel app](https://blockchain-project-live.vercel.app/). You will
 need to have [Coinbase Wallet](https://www.coinbase.com/wallet) or [Metamask](https://metamask.io) installed and listening to
 `localhost 8545`.
 
@@ -76,16 +63,8 @@ This project also includes [a sample frontend/Dapp](./frontend), which uses [Cre
   transaction history and also the nonce. Open Metamask, click on your account
   followed by `Settings > Advanced > Clear activity tab data`.
 
-## Setting up your editor
-
-[Hardhat for Visual Studio Code](https://hardhat.org/hardhat-vscode) is the official Hardhat extension that adds advanced support for Solidity to VSCode. If you use Visual Studio Code, give it a try!
-
-## Getting help and updates
-
-If you need help with this project, or with Hardhat in general, please read [this guide](https://hardhat.org/hardhat-runner/docs/guides/getting-help) to learn where and how to get it.
-
-For the latest news about Hardhat, [follow us on Twitter](https://twitter.com/HardhatHQ), and don't forget to star [our GitHub repository](https://github.com/NomicFoundation/hardhat)!
-
 **Happy _building_!**
 
-I really love Vercel 
+## TODO LIST
+
+-[] Figure out a way to host private blockchain node, and link metamask wallet to it
