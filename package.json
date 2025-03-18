@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "A boilerplate repository to get you started with Hardhat and Ethereum development",
   "scripts": {
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "start:frontend": "cd frontend && npm start",
+    "hardhat:node": "npx hardhat node",
+    "deploy": "npx hardhat run scripts/deploy.js --network localhost",
+    "dev": "concurrently \"npm run hardhat:node\" \"npm run start:frontend\""
   },
   "repository": {
     "type": "git",
@@ -24,6 +28,7 @@
     "@nomiclabs/hardhat-ethers": "^2.2.1",
     "@nomiclabs/hardhat-etherscan": "^3.1.4",
     "chai": "^4.3.7",
+    "concurrently": "^9.1.2",
     "ethers": "^5.7.2",
     "hardhat": "^2.22.19",
     "hardhat-gas-reporter": "^1.0.9",
