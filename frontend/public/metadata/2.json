@@ -1,5 +1,5 @@
 {
     "name": "whatev",
     "description": "A whatev NFT",
-    "image": "http://localhost:3000/images/2.jpg"
+    "image": "https://blockchain-project-live.vercel.app/images/2.jpg"
 }

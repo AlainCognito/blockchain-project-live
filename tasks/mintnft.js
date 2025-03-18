@@ -11,7 +11,8 @@ task("mintnft", "Mints an NFT to an address")
       );
     }
 
-    const addressesFile = __dirname + "/../frontend/src/contracts/contract-address.json";
+    const addressesFile =
+      __dirname + "/../frontend/src/contracts/contract-address.json";
     if (!fs.existsSync(addressesFile)) {
       console.error("You need to deploy your contracts first");
       return;
@@ -29,12 +30,14 @@ task("mintnft", "Mints an NFT to an address")
     const myNFT = await ethers.getContractAt("MyNFT", addresses.MyNFT);
 
     // Determine the next token id by counting Transfer events from the zero address (mint events)
-    const mintFilter = myNFT.filters.Transfer("0x0000000000000000000000000000000000000000");
+    const mintFilter = myNFT.filters.Transfer(
+      "0x0000000000000000000000000000000000000000"
+    );
     const mintEvents = await myNFT.queryFilter(mintFilter);
     const nextTokenId = mintEvents.length + 1;
 
     // Create new metadata URI dynamically (adjust the URL as needed)
-    const tokenURI = `http://localhost:3000/metadata/${nextTokenId}.json`;
+    const tokenURI = `https://blockchain-project-live.vercel.app/metadata/${nextTokenId}.json`;
 
     const tx = await myNFT.mintNFT(receiver, tokenURI);
     await tx.wait();
