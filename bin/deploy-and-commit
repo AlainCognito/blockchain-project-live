@@ -1,13 +1,18 @@
 #!/bin/bash
-# filepath: /home/alexis/Documents/Blockchain/groupe08/deploy-and-commit.sh
-
+# filepath: /home/alexis/Documents/Blockchain/groupe08/bin/deploy-and-commit
 # Exit if any command fails
 set -e
+
+# Change to the backend directory (now in "app")
+cd app
 
 echo "Running deploy script..."
 npx hardhat run scripts/deploy.js --network localhost
 
-# Check for changes to our contract artifacts (adjust file paths if needed)
+# Return to the project root
+cd ..
+
+# Check for changes to our contract artifacts – adjust paths if needed
 echo "Checking for artifact changes..."
 CHANGED_FILES=$(git status --porcelain frontend/src/contracts/contract-address.json frontend/src/contracts/Token.json frontend/src/contracts/MyNFT.json frontend/src/contracts/NFTMarket.json)
 
