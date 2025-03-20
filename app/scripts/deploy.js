@@ -37,7 +37,7 @@ async function main() {
   const fee = 1;
 
   const NFTMarket = await ethers.getContractFactory("NFTMarket");
-  const nftMarket = await NFTMarket.deploy(token.address,fee );
+  const nftMarket = await NFTMarket.deploy(token.address, fee);
   await nftMarket.deployed();
   console.log("NFTMarket deployed to:", nftMarket.address);
 
@@ -49,6 +49,7 @@ function saveFrontendFiles(token, myNFT, nftMarket) {
   const fs = require("fs");
   const contractsDir = path.join(
     __dirname,
+    "..",
     "..",
     "frontend",
     "src",

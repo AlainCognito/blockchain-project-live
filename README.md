@@ -9,21 +9,32 @@ This project is intended to be used with the
 able to follow it by yourself by reading the README and exploring its
 `contracts`, `tests`, `scripts` and `frontend` directories.
 
+This Project relies on : -For the backend- Docker to contenairize (?) both running the local node and ngrok to produce a valid RPC url for it without having to mind about port forwarding, and -For the frontend - vercel to host and deploy the ~static~ frontend. The contracts addresses are updated by a wrapper after every deployment.
+
 ## Quick start
 
-The first things you need to do are cloning this repository and installing its
-dependencies:
+The first things you need to do are cloning this repository
 
 ```sh
 git clone https://gitlab.telecomnancy.univ-lorraine.fr/projets/2425/darkduck25/groupe08
 cd groupe08
-npm install
 ```
 
-Then you need to run a local node, and deploy contracts using the bin/deploy-and-commit wrapper that commits and pushes to github master so vercel redeploys using correct contract-addresses:
+Then you need to run a local node, I provided and dockerfile to do it inside a container :
 
 ```sh
-npm run hardhat:node
+docker-compose up --build #-d to do it in detached mode (background)
+```
+
+To stop the docker services run :
+
+```sh
+docker-compose down
+```
+
+Deploy contracts using the bin/deploy-and-commit wrapper that commits and pushes to github master so vercel redeploys using correct contract-addresses:
+
+```sh
 ./bin/deploy-and-commit
 ```
 
@@ -67,6 +78,7 @@ This project also includes [a sample frontend/Dapp](./frontend), which uses [Cre
 
 ## TODO LIST
 
--[x] Figure out a way to host private blockchain node, and link metamask wallet to it 
-**The App works great with multiple clients **
+-[x] Figure out a way to host private blockchain node, and link metamask wallet to it
+-- I will be running both
+**The App works great with multiple clients**
 -[] Next step is building correct logic behind nft minting, giving some MHT to first connexions, making bids and auctions work...
