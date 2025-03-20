@@ -18,9 +18,12 @@ services:
     restart: unless-stopped
 
   deployer:
-    depends_on:
-      - hardhat-node
     build:
       context: .
       dockerfile: Dockerfile
-      target: deployer
+      target: hardhat-node
+    depends_on:
+      hardhat-node:
+    command: >
+      sh -c "until nc -z hardhat-node 8545; do echo 'Waiting for hardhat node...'; sleep 2; done;
+      cd app && npx hardhat run scripts/deploy.js --network localhost"
