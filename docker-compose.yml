@@ -1,21 +1,26 @@
-version: "3.9"
-
 services:
   hardhat-node:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8545:8545"
+      target: hardhat-node
     restart: unless-stopped
 
   ngrok:
-    image: wernight/ngrok:latest # specify a tag if available
+    image: wernight/ngrok:latest
     depends_on:
       - hardhat-node
     ports:
-      - "4040:4040" # optional: ngrok web UI
+      - "4040:4040"
     environment:
       - NGROK_AUTHTOKEN=2uV8OqsEINccaMNZUuY7a96OYlc_4Rd25zt148tYJY7zadL53
     command: ngrok http hardhat-node:8545
     restart: unless-stopped
+
+  deployer:
+    depends_on:
+      - hardhat-node
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deployer
