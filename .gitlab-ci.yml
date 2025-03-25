@@ -9,7 +9,6 @@ deploy_to_github:
         - frontend/src/contracts/Token.json
         - frontend/src/contracts/MyNFT.json
         - frontend/src/contracts/NFTMarket.json
-    - when: never
   script:
     - echo "Adding GitHub remote..."
     - git remote add github "${GITHUB_REPO_URL}" || echo "Remote already exists"
