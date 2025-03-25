@@ -16,7 +16,5 @@ deploy_to_github:
     - git remote add github "${GITHUB_REPO_URL}" || echo "Remote already exists"
     - echo "Pushing changes to GitHub..."
     - git push github HEAD:main
-  only:
-    - branches
   variables:
     GITHUB_REPO_URL: "https://AlainCognito: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@github.com/AlainCognito/blockchain-project-live.git"
