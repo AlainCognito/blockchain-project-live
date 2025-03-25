@@ -17,7 +17,7 @@ The first things you need to do are cloning this repository, and installing dock
 
 ```sh
 git clone https://gitlab.telecomnancy.univ-lorraine.fr/projets/2425/darkduck25/groupe08
-cd groupe08
+cd groupe08 
 ```
 
 Then you need to run a local node, I provided and dockerfile to do it inside a container :
