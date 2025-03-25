@@ -19,4 +19,4 @@ deploy_to_github:
   only:
     - branches
   variables:
-    GITHUB_REPO_URL: "https://AlainCognito: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@github.com/username/repository.git"
+    GITHUB_REPO_URL: "https://AlainCognito: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@github.com/AlainCognito/blockchain-project-live.git"
