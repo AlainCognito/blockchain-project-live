@@ -16,7 +16,7 @@ This Project relies on : -For the backend- Docker to contenairize (?) both runni
 The first things you need to do are cloning this repository, and installing docker-compose and dependencies
 
 ```sh
-git clone https://gitlab.telecomnancy.univ-lorraine.fr/projets/2425/darkduck25/groupe08
+git clone https://gitlab.telecomnancy.univ-lorraine.fr/projets/2425/darkduck25/groupe08 
 cd groupe08 
 ```
 
