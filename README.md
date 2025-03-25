@@ -13,7 +13,7 @@ This Project relies on : -For the backend- Docker to contenairize (?) both runni
 
 ## Quick start
 
-The first things you need to do are cloning this repository
+The first things you need to do are cloning this repository, and installing docker-compose and dependencies
 
 ```sh
 git clone https://gitlab.telecomnancy.univ-lorraine.fr/projets/2425/darkduck25/groupe08
@@ -32,11 +32,6 @@ To stop the docker services run :
 docker-compose down
 ```
 
-Deploy contracts using the bin/deploy-and-commit wrapper that commits and pushes to github master so vercel redeploys using correct contract-addresses:
-
-```sh
-./bin/deploy-and-commit
-```
 
 Open [Vercel app](https://blockchain-project-live.vercel.app/). You will
 need to have [Coinbase Wallet](https://www.coinbase.com/wallet) or [Metamask](https://metamask.io) installed and listening to

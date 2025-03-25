@@ -50,7 +50,6 @@ function saveFrontendFiles(token, myNFT, nftMarket) {
   const contractsDir = path.join(
     __dirname,
     "..",
-    "..",
     "frontend",
     "src",
     "contracts"
