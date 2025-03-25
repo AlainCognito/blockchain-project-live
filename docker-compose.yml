@@ -4,6 +4,11 @@ services:
       context: .
       dockerfile: Dockerfile
       target: hardhat-node
+    volumes:
+      - ./.git:/app/.git
+    environment:
+      - GITHUB_USER=AlainCognito
+      - GITHUB_TOKEN=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
     restart: unless-stopped
 
   ngrok:

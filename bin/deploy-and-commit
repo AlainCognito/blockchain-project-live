@@ -1,24 +1,22 @@
-#!/bin/bash
-# filepath: /home/alexis/Documents/Blockchain/groupe08/bin/deploy-and-commit
+#!/bin/sh
+
 # Exit if any command fails
 set -e 
-
-# Change to the backend directory (now in "app")
-cd app
 
 echo "Running deploy script..."
 npx hardhat run scripts/deploy.js --network localhost
 
-# Return to the project root
-cd ..
-
 # Check for changes to our contract artifacts – adjust paths if needed
 echo "Checking for artifact changes..."
+git config --global --add safe.directory /app
 CHANGED_FILES=$(git status --porcelain frontend/src/contracts/contract-address.json frontend/src/contracts/Token.json frontend/src/contracts/MyNFT.json frontend/src/contracts/NFTMarket.json)
 
 if [ -n "$CHANGED_FILES" ]; then
   echo "Artifact changes detected, committing and pushing to master..."
+  git config --global user.name "(Docker) CI/CD Bot"
+  git config --global user.email "alaincognitomailbox@proton.me"
   git add frontend/src/contracts/contract-address.json frontend/src/contracts/Token.json frontend/src/contracts/MyNFT.json frontend/src/contracts/NFTMarket.json
+  git remote set-url github "https://$GITHUB_USER:${GITHUB_TOKEN}@github.com/AlainCognito/blockchain-project-live.git"
   git commit -m "chore: update deployed contract addresses"
   git push github master
   echo "Commit and push complete."
