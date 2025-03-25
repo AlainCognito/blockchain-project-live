@@ -3,17 +3,13 @@ stages:
 
 deploy_to_github:
   stage: deploy
-  image: ubuntu:20.04
   rules:
     - changes:
         - frontend/src/contracts/contract-address.json
         - frontend/src/contracts/Token.json
         - frontend/src/contracts/MyNFT.json
         - frontend/src/contracts/NFTMarket.json
-      when: always
     - when: never
-  before_script:
-    - apt-get update && apt-get install -y git curl
   script:
     - echo "Adding GitHub remote..."
     - git remote add github "${GITHUB_REPO_URL}" || echo "Remote already exists"
