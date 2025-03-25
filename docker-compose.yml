@@ -5,18 +5,20 @@ services:
       dockerfile: Dockerfile
       target: hardhat-node
     volumes:
-      - ./.git:/app/.git
-    environment:
-      - GITHUB_USER=AlainCognito
-      - GITHUB_TOKEN=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
+      - ./frontend/src/contracts:/app/frontend/src/contracts
     restart: unless-stopped
 
   ngrok:
-    image: wernight/ngrok:latest
     depends_on:
       - hardhat-node
     ports:
       - "4040:4040"
+    build: 
+      dockerfile: Dockerfile
+      target: ngrok
+    volumes:
+      - ./frontend/src/contracts:/frontend/src/contracts
+      - ./bin:/frontend/bin
     environment:
       - NGROK_AUTHTOKEN=2uV8OqsEINccaMNZUuY7a96OYlc_4Rd25zt148tYJY7zadL53
     command: ngrok http hardhat-node:8545
