@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
       target: hardhat-node
     volumes:
-      - ./frontend/src/contracts:/app/frontend/src/contracts
+      - ./frontend/src/contracts:/frontend/src/contracts
     restart: unless-stopped
 
   ngrok:
