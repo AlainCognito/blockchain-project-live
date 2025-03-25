@@ -3,6 +3,7 @@ stages:
 
 deploy_to_github:
   stage: deploy
+  image: ubuntu:20.04
   rules:
     - changes:
         - frontend/src/contracts/contract-address.json
@@ -11,6 +12,8 @@ deploy_to_github:
         - frontend/src/contracts/NFTMarket.json
       when: always
     - when: never
+  before_script:
+    - apt-get update && apt-get install -y git curl
   script:
     - echo "Adding GitHub remote..."
     - git remote add github "${GITHUB_REPO_URL}" || echo "Remote already exists"
@@ -18,4 +21,3 @@ deploy_to_github:
     - git push github HEAD:master
   variables:
     GITHUB_REPO_URL: "https://AlainCognito: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@github.com/AlainCognito/blockchain-project-live.git"
-    DOCKER_CONTENT_TRUST: "0"
