@@ -20,15 +20,14 @@ jobs:
 
       - name: Run Deployment via Docker Compose
         run: |
-          # Run the hardhat-node container which will execute the deploy script (via start.sh)
           docker-compose run --rm hardhat-node sh -c "npx hardhat run scripts/deploy.js --network localhost"
 
       - name: Commit and Push Artifacts
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
+          git config --global user.name "Alain Cognito"
+          git config --global user.email "alaincognitomailbox@proton.me"
           git add frontend/src/contracts
           git commit -m "Update deployed contract artifacts" || echo "No changes to commit"
           git push
         env:
-          GITHUB_TOKEN: ${{ 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 }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
