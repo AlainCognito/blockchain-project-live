@@ -5,7 +5,7 @@ import urlData from "../contracts/url.json";
 export const Help = () => {
   return (
     <div className="container p-4">
-      <h1>How to Configure Your MetaMask</h1>
+      <h1>How to Configure Your MetaMask wallet</h1>
       <p>
         To interact with our decentralized application, you must connect your
         MetaMask wallet to our custom network.
@@ -37,15 +37,16 @@ export const Help = () => {
               <code>{urlData.public_url}</code>
             </li>
             <li>
-              Fill in any additional required fields (Chain ID, Symbol, etc.) if
-              provided by your network administrator.
+              Fill in any additional required fields (Chain ID{" "}
+              <code>31337</code>, Symbol, etc.) if provided by your network
+              administrator.
             </li>
             <li>Save the network.</li>
           </ol>
         </li>
         <li>
           <strong>Connect your wallet:</strong> After adding the network, click
-          on the "<em>Connect Wallet</em>" button in our Dapp.
+          on the "<em>Connect Wallet</em>" button on homepage.
         </li>
       </ol>
       <p>

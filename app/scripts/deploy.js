@@ -3,6 +3,31 @@
 
 const path = require("path");
 
+async function mintAllNFTs(myNFT, deployer) {
+  const metadataPath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "frontend",
+    "public",
+    "metadata",
+    "nfts.json"
+  );
+
+  // Read and parse the metadata file
+  const fileData = fs.readFileSync(metadataPath, "utf8");
+  const nfts = JSON.parse(fileData);
+
+  console.log("Minting NFTs...");
+  // Loop over each NFT metadata and mint the NFT to the deployer address
+  for (const nft of nfts) {
+    console.log(`Minting NFT ${nft.id} - ${nft.name}`);
+    const tx = await myNFT.mint(deployer.address, nft.image);
+    await tx.wait();
+    console.log(`NFT ${nft.id} minted successfully.`);
+  }
+}
+
 async function main() {
   // This is just a convenience check
   if (network.name === "hardhat") {
@@ -31,6 +56,8 @@ async function main() {
   const MyNFT = await ethers.getContractFactory("MyNFT");
   const myNFT = await MyNFT.deploy();
   await myNFT.deployed();
+
+  mintAllNFTs(myNFT, deployer);
 
   console.log("MyNFT deployed to:", myNFT.address);
 
