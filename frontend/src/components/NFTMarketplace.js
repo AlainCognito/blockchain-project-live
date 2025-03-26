@@ -80,6 +80,7 @@ export function NFTMarketplace({
         } catch (err) {
           console.error(
             `Error fetching metadata for token ${tokenId}:`,
+            err,
             tokenURI
           );
         }
