@@ -13,6 +13,7 @@ async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
     "public",
     "metadata"
   );
+  const remote_path = "https://blockchain-project-live.vercel.app/metadata/";
 
   // Read all JSON files in the metadata folder
   const files = fs
@@ -22,11 +23,13 @@ async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
   console.log("Minting NFTs...");
   for (const file of files) {
     const filePath = path.join(metadataDir, file);
+    const remote_file = remote_path + file;
+
     const fileData = fs.readFileSync(filePath, "utf8");
     const nft = JSON.parse(fileData);
 
-    console.log(`Minting NFT $ ${nft.name}`);
-    const tx = await myNFT.mintNFT(deployer.address, fileData);
+    console.log(`${remote_file}`);
+    const tx = await myNFT.mintNFT(deployer.address, remote_file);
     const receipt = await tx.wait();
     console.log(`NFT minted successfully.`);
 
