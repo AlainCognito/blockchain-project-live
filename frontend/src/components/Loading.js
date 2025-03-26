@@ -30,6 +30,11 @@ export function Loading() {
           <span className="sr-only">Loading...</span>
         </div>
       </div>
+      <div className="mt-3">
+        <Link to="/help" className="btn btn-link">
+          Need help?
+        </Link>
+      </div>
     </div>
   );
 }
