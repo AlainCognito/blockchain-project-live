@@ -1,5 +1,5 @@
 import React from "react";
-
+import { Link } from "react-router-dom";
 import { NetworkErrorMessage } from "./NetworkErrorMessage";
 
 export function ConnectWallet({ connectWallet, networkError, dismiss }) {
@@ -7,12 +7,9 @@ export function ConnectWallet({ connectWallet, networkError, dismiss }) {
     <div className="container">
       <div className="row justify-content-md-center">
         <div className="col-12 text-center">
-          {/* Wallet network should be set to Localhost:8545. */}
+          {/* Wallet network should be set to ngrok url */}
           {networkError && (
-            <NetworkErrorMessage 
-              message={networkError} 
-              dismiss={dismiss} 
-            />
+            <NetworkErrorMessage message={networkError} dismiss={dismiss} />
           )}
         </div>
         <div className="col-6 p-4 text-center">
@@ -24,6 +21,11 @@ export function ConnectWallet({ connectWallet, networkError, dismiss }) {
           >
             Connect Wallet
           </button>
+          <div className="mt-3">
+            <Link to="/help" className="btn btn-link">
+              Need help?
+            </Link>
+          </div>
         </div>
       </div>
     </div>

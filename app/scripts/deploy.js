@@ -3,7 +3,8 @@
 
 const path = require("path");
 
-async function mintAllNFTs(myNFT, deployer) {
+async function mintAllNFTs(myNFT, deployer, myNFTMarket) {
+  const fs = require("fs");
   const metadataPath = path.join(
     __dirname,
     "..",
@@ -21,10 +22,31 @@ async function mintAllNFTs(myNFT, deployer) {
   console.log("Minting NFTs...");
   // Loop over each NFT metadata and mint the NFT to the deployer address
   for (const nft of nfts) {
+    const tokenId = nft.id;
     console.log(`Minting NFT ${nft.id} - ${nft.name}`);
-    const tx = await myNFT.mint(deployer.address, nft.image);
+    const tx = await myNFT.mintNFT(deployer.address, nft.image);
     await tx.wait();
     console.log(`NFT ${nft.id} minted successfully.`);
+
+    const approveTx = await myNFT.approve(myNFTMarket.address, tokenId);
+    await approveTx.wait();
+    console.log(`NFT ${tokenId} approved.`);
+
+    const approveTokenTx = await token.approve(myNFTMarket.address, price);
+    await approveTokenTx.wait();
+
+    // Set your desired fixed price; adjust units as required.
+    const price = ethers.utils.parseUnits("1000", 0);
+    console.log(
+      `Creating market listing for NFT ${tokenId} at price ${price}...`
+    );
+    const listTx = await myNFTMarket.createMarketItem(
+      myNFT.address,
+      tokenId,
+      price
+    );
+    await listTx.wait();
+    console.log(`NFT ${tokenId} listed successfully.`);
   }
 }
 
@@ -57,19 +79,19 @@ async function main() {
   const myNFT = await MyNFT.deploy();
   await myNFT.deployed();
 
-  mintAllNFTs(myNFT, deployer);
-
   console.log("MyNFT deployed to:", myNFT.address);
 
   const fee = 1;
 
   const NFTMarket = await ethers.getContractFactory("NFTMarket");
-  const nftMarket = await NFTMarket.deploy(token.address, fee);
-  await nftMarket.deployed();
-  console.log("NFTMarket deployed to:", nftMarket.address);
+  const myNFTMarket = await NFTMarket.deploy(token.address, fee);
+  await myNFTMarket.deployed();
+  console.log("NFTMarket deployed to:", myNFTMarket.address);
+
+  mintAllNFTs(myNFT, deployer, myNFTMarket);
 
   // We also save the contract's artifacts and address in the frontend directory
-  saveFrontendFiles(token, myNFT, nftMarket);
+  saveFrontendFiles(token, myNFT, myNFTMarket);
 }
 
 function saveFrontendFiles(token, myNFT, nftMarket) {
