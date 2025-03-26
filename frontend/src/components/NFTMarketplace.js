@@ -74,16 +74,16 @@ export function NFTMarketplace({
         } catch (err) {
           console.error(`Error fetching tokenURI for token ${tokenId}:`, err);
         }
-        let metadata = {};
-        try {
-          metadata = await tokenURI.json();
-        } catch (err) {
-          console.error(
-            `Error fetching metadata for token ${tokenId}:`,
-            err,
-            tokenURI
-          );
-        }
+        let metadata = tokenId;
+        // try {
+        //   const res = await fetch(tokenURI);
+        //   metadata = await res.json();
+        // } catch (err) {
+        //   console.error(
+        //     `Error fetching metadata for token ${tokenId}:`,
+        //     tokenURI
+        //   );
+        // }
         let owner = "";
         try {
           owner = (await myNFTContract.ownerOf(tokenId)).toLowerCase();
