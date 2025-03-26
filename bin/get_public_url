@@ -5,4 +5,4 @@ set -e
 PUBLIC_URL=$(curl --silent http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
 
 # Update the "public_url" field in contract-address.json
-echo "{\"public_url\": \"$PUBLIC_URL\"}" > /frontend/src/contracts/contract-address.json
+echo "{\"public_url\": \"$PUBLIC_URL\"}" > /frontend/src/contracts/url.json
