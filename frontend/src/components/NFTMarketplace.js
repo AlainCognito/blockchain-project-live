@@ -79,7 +79,10 @@ export function NFTMarketplace({
           const res = await fetch(tokenURI);
           metadata = await res.json();
         } catch (err) {
-          console.error(`Error fetching metadata for token ${tokenId}:`, res);
+          console.error(
+            `Error fetching metadata for token ${tokenId}:`,
+            tokenURI
+          );
         }
         let owner = "";
         try {
