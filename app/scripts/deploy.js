@@ -88,7 +88,6 @@ async function main() {
   await myNFTMarket.deployed();
   console.log("NFTMarket deployed to:", myNFTMarket.address);
 
-  mintAllNFTs(myNFT, deployer, myNFTMarket, token);
   await mintAllNFTs(myNFT, deployer, myNFTMarket, token);
 
   // We also save the contract's artifacts and address in the frontend directory
