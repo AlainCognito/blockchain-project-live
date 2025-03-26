@@ -5,31 +5,37 @@ const path = require("path");
 
 async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
   const fs = require("fs");
-  const metadataPath = path.join(
+  const metadataDir = path.join(
     __dirname,
     "..",
     "..",
     "frontend",
     "public",
-    "metadata",
-    "nfts.json"
+    "metadata"
   );
 
-  // Read and parse the metadata file
-  const fileData = fs.readFileSync(metadataPath, "utf8");
-  const nfts = JSON.parse(fileData);
+  // Read all JSON files in the metadata folder
+  const files = fs
+    .readdirSync(metadataDir)
+    .filter((file) => file.endsWith(".json"));
 
   console.log("Minting NFTs...");
-  // Loop over each NFT metadata and mint the NFT to the deployer address
-  for (const nft of nfts) {
-    console.log(`Minting NFT ${nft.id} - ${nft.name}`);
-    const tx = await myNFT.mintNFT(deployer.address, nft.image);
-    await tx.wait();
-    console.log(`NFT ${nft.id} minted successfully.`);
+  for (const file of files) {
+    const filePath = path.join(metadataDir, file);
+    const fileData = fs.readFileSync(filePath, "utf8");
+    const nft = JSON.parse(fileData);
 
-    const approveTx = await myNFT.approve(myNFTMarket.address, nft.id);
+    console.log(`Minting NFT $ ${nft.name}`);
+    const tx = await myNFT.mintNFT(deployer.address, fileData);
+    const receipt = await tx.wait();
+    console.log(`NFT minted successfully.`);
+
+    const tokenId = receipt.events.find((event) => event.event === "Transfer")
+      .args.tokenId;
+
+    const approveTx = await myNFT.approve(myNFTMarket.address, tokenId);
     await approveTx.wait();
-    console.log(`NFT ${nft.id} approved.`);
+    console.log(`NFT ${tokenId} approved.`);
 
     // Set your desired fixed price; adjust units as required.
     const price = ethers.utils.parseUnits("1000", 0);
@@ -38,15 +44,15 @@ async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
     await approveTokenTx.wait();
 
     console.log(
-      `Creating market listing for NFT ${nft.id} at price ${price}...`
+      `Creating market listing for NFT ${tokenId} at price ${price}...`
     );
     const listTx = await myNFTMarket.createMarketItem(
       myNFT.address,
-      nft.id,
+      tokenId,
       price
     );
     await listTx.wait();
-    console.log(`NFT ${nft.id} listed successfully.`);
+    console.log(`NFT ${tokenId} listed successfully.`);
   }
 }
 
