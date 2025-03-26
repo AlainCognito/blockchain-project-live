@@ -205,11 +205,14 @@ export class Dapp extends React.Component {
           to="/nft-marketplace"
           state={{
             account: this.state.selectedAddress,
-            
           }}
-          className="btn btn-primary"
+          className="btn btn-primary mr-2"
         >
           Visit NFT Marketplace
+        </Link>
+
+        <Link to="/help" className="btn btn-secondary">
+          Help
         </Link>
       </div>
     );

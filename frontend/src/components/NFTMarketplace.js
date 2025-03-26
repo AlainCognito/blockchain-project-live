@@ -369,33 +369,35 @@ export function NFTMarketplace({
                   {nft.seller.slice(0, 6) + "..." + nft.seller.slice(-4)}
                 </p>
                 <p>Price: {nft.price} MHT</p>
-                {account && nft.seller.toLowerCase() !== account.toLowerCase() && (
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Your bid in MHT"
-                      value={bids[nft.tokenId] || ""}
-                      onChange={(e) =>
-                        setBids({ ...bids, [nft.tokenId]: e.target.value })
-                      }
-                      style={{ marginBottom: "0.5rem" }}
-                    />
-                    <button onClick={() => placeBid(nft.itemId)}>
-                      Place Bid
-                    </button>
-                    <button onClick={() => buyNFT(nft.itemId, nft.price)}>
-                      Buy NFT
-                    </button>
-                  </div>
-                )}
-                {account && nft.seller.toLowerCase() === account.toLowerCase() && (
-                  <div>
-                    <p>You listed this NFT</p>
-                    <button onClick={() => cancelListing(nft.itemId)}>
-                      Cancel Listing
-                    </button>
-                  </div>
-                )}
+                {account &&
+                  nft.seller.toLowerCase() !== account.toLowerCase() && (
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Your bid in MHT"
+                        value={bids[nft.tokenId] || ""}
+                        onChange={(e) =>
+                          setBids({ ...bids, [nft.tokenId]: e.target.value })
+                        }
+                        style={{ marginBottom: "0.5rem" }}
+                      />
+                      <button onClick={() => placeBid(nft.itemId)}>
+                        Place Bid
+                      </button>
+                      <button onClick={() => buyNFT(nft.itemId, nft.price)}>
+                        Buy NFT
+                      </button>
+                    </div>
+                  )}
+                {account &&
+                  nft.seller.toLowerCase() === account.toLowerCase() && (
+                    <div>
+                      <p>You listed this NFT</p>
+                      <button onClick={() => cancelListing(nft.itemId)}>
+                        Cancel Listing
+                      </button>
+                    </div>
+                  )}
               </div>
             )}
             {/*
@@ -408,7 +410,7 @@ export function NFTMarketplace({
         ))}
       </div>
       <br />
-      <Link to="/" state={{ account }} className="btn btn-primary">
+      <Link to="/app" state={{ account }} className="btn btn-primary">
         Return Home
       </Link>
     </div>

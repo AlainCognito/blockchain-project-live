@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import urlData from "../contracts/url.json";
 
 export const Help = () => {
@@ -12,9 +13,16 @@ export const Help = () => {
       <h2>Steps to Set Up MetaMask</h2>
       <ol>
         <li>
-          <strong>Install MetaMask:</strong> If you haven't already, install the
-          MetaMask extension in your browser.
-          <br /> See: <a href="https://metamask.io">metamask.io</a>
+          <strong>Install MetaMask:</strong> If you haven&apos;t already,
+          install the MetaMask extension in your browser.
+          <br /> See:{" "}
+          <a
+            href="https://metamask.io"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            metamask.io
+          </a>
         </li>
         <li>
           <strong>Add a new network:</strong>
@@ -37,13 +45,16 @@ export const Help = () => {
         </li>
         <li>
           <strong>Connect your wallet:</strong> After adding the network, click
-          on "<em>Connect Wallet</em>" in our Dapp.
+          on the "<em>Connect Wallet</em>" button in our Dapp.
         </li>
       </ol>
       <p>
         If you need further help, please consult the documentation or contact
         support.
       </p>
+      <Link to="/" className="btn btn-primary">
+        Return to Home
+      </Link>
     </div>
   );
 };
