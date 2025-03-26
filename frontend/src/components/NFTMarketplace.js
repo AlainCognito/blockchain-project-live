@@ -124,7 +124,7 @@ export function NFTMarketplace({
   }
 
   // List an NFT for sale.
-  async function listNFT(e) {
+  async function createListingNFT(e) {
     e.preventDefault();
     // Retrieve tokenId from hidden field entered by the inline form.
     const tokenId = e.target.tokenId.value;
@@ -338,7 +338,7 @@ export function NFTMarketplace({
                     List NFT for Sale
                   </button>
                 ) : (
-                  <form onSubmit={listNFT}>
+                  <form onSubmit={createListingNFT}>
                     <input type="hidden" name="tokenId" value={nft.tokenId} />
                     <input
                       name="price"

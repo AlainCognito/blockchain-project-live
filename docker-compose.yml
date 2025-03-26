@@ -6,6 +6,7 @@ services:
       target: hardhat-node
     volumes:
       - ./frontend/src/contracts:/frontend/src/contracts
+      - ./frontend/public/metadata:/frontend/public/metadata
     restart: unless-stopped
 
   ngrok:
@@ -13,7 +14,7 @@ services:
       - hardhat-node
     ports:
       - "4040:4040"
-    build: 
+    build:
       dockerfile: Dockerfile
       target: ngrok
     volumes:
