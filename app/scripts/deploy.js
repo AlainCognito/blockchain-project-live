@@ -29,7 +29,7 @@ async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
     const nft = JSON.parse(fileData);
 
     console.log(`${remote_file}`);
-    const tx = await myNFT.mintNFT(deployer.address, remote_file);
+    const tx = await myNFT.mintNFT(deployer.address, myNFT.address);
     const receipt = await tx.wait();
     console.log(`NFT minted successfully.`);
 
