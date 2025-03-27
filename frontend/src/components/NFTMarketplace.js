@@ -74,7 +74,7 @@ export function NFTMarketplace({
         } catch (err) {
           console.error(`Error fetching tokenURI for token ${tokenId}:`, err);
         }
-        let metadata = tokenId;
+        let metadata = tokenURI;
         // try {
         //   const res = await fetch(tokenURI);
         //   metadata = await res.json();

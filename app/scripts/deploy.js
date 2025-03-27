@@ -5,7 +5,7 @@ const path = require("path");
 
 async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
   const fs = require("fs");
-  const metadataDir = path.join(
+  const metadataDir=path.join(
     __dirname,
     "..",
     "..",
@@ -13,6 +13,7 @@ async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
     "public",
     "metadata"
   );
+
   const remote_path = "https://blockchain-project-live.vercel.app/metadata/";
 
   // Read all JSON files in the metadata folder
@@ -22,14 +23,10 @@ async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
 
   console.log("Minting NFTs...");
   for (const file of files) {
-    const filePath = path.join(metadataDir, file);
-    const remote_file = remote_path + file;
+    const remote_address = remote_path + file;
+    console.log(`${remote_address}`);
 
-    const fileData = fs.readFileSync(filePath, "utf8");
-    const nft = JSON.parse(fileData);
-
-    console.log(`${remote_file}`);
-    const tx = await myNFT.mintNFT(deployer.address, myNFT.address);
+    const tx = await myNFT.mintNFT(deployer.address, remote_address);
     const receipt = await tx.wait();
     console.log(`NFT minted successfully.`);
 
@@ -49,11 +46,13 @@ async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
     console.log(
       `Creating market listing for NFT ${tokenId} at price ${price}...`
     );
+
     const listTx = await myNFTMarket.createMarketItem(
       myNFT.address,
       tokenId,
       price
     );
+
     await listTx.wait();
     console.log(`NFT ${tokenId} listed successfully.`);
   }
