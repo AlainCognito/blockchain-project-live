@@ -376,7 +376,7 @@ export function NFTMarketplace({
                 {account &&
                   nft.seller.toLowerCase() !== account.toLowerCase() && (
                     <div>
-                      <input
+                      {/* <input
                         type="text"
                         placeholder="Your bid in MHT"
                         value={bids[nft.tokenId] || ""}
@@ -387,7 +387,7 @@ export function NFTMarketplace({
                       />
                       <button onClick={() => placeBid(nft.itemId)}>
                         Place Bid
-                      </button>
+                      </button> */}
                       <button onClick={() => buyNFT(nft.itemId, nft.price)}>
                         Buy NFT
                       </button>
