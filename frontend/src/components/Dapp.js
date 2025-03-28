@@ -1,4 +1,6 @@
 import React from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react"
+
 // We'll use ethers to interact with the Ethereum network and our contract
 import { ethers } from "ethers";
 import { Link } from "react-router-dom";

@@ -4,7 +4,6 @@ import { Dapp } from "./components/Dapp";
 import { NFTMarketplace } from "./components/NFTMarketplace";
 import { Help } from "./components/Help";
 import { CreateWallet } from "./components/CreateWallet";
-import { SpeedInsights } from "@vercel/speed-insights/react"
 
 function App() {
   return (
