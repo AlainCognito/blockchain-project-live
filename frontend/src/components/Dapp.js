@@ -441,4 +441,22 @@ export class Dapp extends React.Component {
       this._switchChain();
     }
   }
+  async fundNewWallet(newAddress) {
+    // Assumes window.ethereum is available and the connected account has sufficient funds.
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+
+    // Send 1000 ETH
+    const txEth = await signer.sendTransaction({
+      to: newAddress,
+      value: ethers.utils.parseEther("1000"),
+    });
+    await txEth.wait();
+
+    // Send MHT tokens – assume your token contract instance is stored in this._token
+    // and that MHT has 0 decimals (adjust if needed)
+    const tokenAmount = ethers.utils.parseUnits("1000", 0);
+    const txToken = await this._token.transfer(newAddress, tokenAmount);
+    await txToken.wait();
+  }
 }
