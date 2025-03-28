@@ -13,7 +13,7 @@ for image in "$images_dir"/*; do
     # Use -w0 to avoid newline wrapping in the base64 output
     encoded_name=$(printf "%s" "$trimmed_name" | base64 -w0)
     # Remove any accidental spaces/newlines and take the last 16 characters
-    nft_name=$(printf "%s" "$encoded_name" | tr -d '\n\r ' | tail -c 16)
+    nft_name=$(printf "%s" "$encoded_name" | tr -d '\n\r= ' | tr -d "="| tail -c 16 )
     metadata_file="$metadata_dir/${image_name}.json"
     url="https://blockchain-project-live.vercel.app/images/$image_name"
     
