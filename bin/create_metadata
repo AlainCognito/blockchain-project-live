@@ -11,7 +11,7 @@ for image in "$images_dir"/*; do
     image_name=$(basename "$image")
     # Create metadata filename by replacing the image extension with .json
     metadata_file="$metadata_dir/${image_name%.*}.json"
-    url="blockchain-project-live.vercel.app/images/$image_name"
+    url="https://blockchain-project-live.vercel.app/images/$image_name"
     
     # Write metadata JSON for the current image with an incremental id field
     cat <<EOF > "$metadata_file"
