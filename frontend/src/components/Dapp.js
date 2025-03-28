@@ -203,6 +203,7 @@ export class Dapp extends React.Component {
         <Link to="/help" className="btn btn-secondary">
           Help
         </Link>
+        <SpeedInsights />
       </div>
     );
   }
