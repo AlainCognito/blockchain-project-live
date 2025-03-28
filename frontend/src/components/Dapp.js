@@ -56,7 +56,9 @@ export class Dapp extends React.Component {
       txBeingSent: undefined,
       transactionError: undefined,
       networkError: undefined,
-      selectedTokenID: null,
+      selectedTokenId: null,
+      // Add a state attribute for NFT count
+      nftsCount: 0,
     };
 
     this.state = this.initialState;
@@ -124,15 +126,15 @@ export class Dapp extends React.Component {
       <div className="container p-4">
         <div className="row">
           <div className="col-12">
-            <h1>
-              {this.state.tokenData.name} ({this.state.tokenData.symbol})
+            <h1 className="display-4 text-warning">
+              {this.state.tokenData.name}{" "}
+              <small className="text-muted">({this.state.tokenData.symbol})</small>
             </h1>
-            <p>
+            <p className="lead">
               Welcome <b>{this.state.selectedAddress}</b>, you have{" "}
               <b>
                 {this.state.balance.toString()} {this.state.tokenData.symbol}
-              </b>
-              .
+              </b>.
             </p>
           </div>
         </div>
@@ -141,19 +143,9 @@ export class Dapp extends React.Component {
 
         <div className="row">
           <div className="col-12">
-            {/* 
-              Sending a transaction isn't an immediate action. You have to wait
-              for it to be mined.
-              If we are waiting for one, we show a message here.
-            */}
             {this.state.txBeingSent && (
               <WaitingForTransactionMessage txHash={this.state.txBeingSent} />
             )}
-
-            {/* 
-              Sending a transaction can fail in multiple ways. 
-              If that happened, we show a message here.
-            */}
             {this.state.transactionError && (
               <TransactionErrorMessage
                 message={this._getRpcErrorMessage(this.state.transactionError)}
@@ -165,21 +157,11 @@ export class Dapp extends React.Component {
 
         <div className="row">
           <div className="col-12">
-            {/*
-              If the user has no tokens, we don't show the Transfer form
-            */}
             {this.state.balance.eq(0) && (
               <NoTokensMessage selectedAddress={this.state.selectedAddress} />
             )}
-
-            {/*
-              This component displays a form that the user can use to send a 
-              transaction and transfer some tokens.
-              The component doesn't have logic, it just calls the transferTokens
-              callback.
-            */}
             {this.state.balance.gt(0) && (
-              <Transfer
+              <Transfer className="btn btn-secondary"
                 transferTokens={(to, amount) =>
                   this._transferTokens(to, amount)
                 }
@@ -189,30 +171,35 @@ export class Dapp extends React.Component {
           </div>
         </div>
         <hr />
-        {/* NFT Gallery section */}
+
+        {/* NFT Gallery and NFT Transfer arranged side by side */}
         <div className="row">
-          <div className="col-12">
+          <div className="col-md-8">
             <NFTGallery
               myNFTContract={this._myNFT}
               account={this.state.selectedAddress}
               onSelectNFT={this._selectNFT}
+              onNFTCountUpdate={(count) => this.setState({ nftsCount: count })}
             />
           </div>
-          <TransferNFT
-            transferNFT={(to, tokenId) => this._transferNFT(to, tokenId)}
-            tokenId={this.state.selectedTokenId}
-          />
+          {this.state.nftsCount > 0 && (
+            <div className="col-md-4">
+              <TransferNFT
+                transferNFT={(to, tokenId) => this._transferNFT(to, tokenId)}
+                tokenId={this.state.selectedTokenId}
+              />
+            </div>
+          )}
         </div>
+
+        {/* Existing navigation links */}
         <Link
           to="/nft-marketplace"
-          state={{
-            account: this.state.selectedAddress,
-          }}
-          className="btn btn-primary mr-2"
+          state={{ account: this.state.selectedAddress }}
+          className="btn btn-warning mr-2"
         >
           Visit NFT Marketplace
         </Link>
-
         <Link to="/help" className="btn btn-secondary">
           Help
         </Link>
@@ -242,18 +229,17 @@ export class Dapp extends React.Component {
   }
 
   _initialize(userAddress) {
-    // This method initializes the dapp
-
-    // We first store the user's address in the component's state
+    // Store the user's address in the component state.
     this.setState({
       selectedAddress: userAddress,
     });
 
-    // Then, we initialize ethers, fetch the token's data, and start polling
-    // for the user's balance.
+    // Propagate the account to the parent so that the NavBar updates.
+    if (this.props.setAccount) {
+      this.props.setAccount(userAddress);
+    }
 
-    // Fetching the token data and the user's balance are specific to this
-    // sample project, but you can reuse the same initialization pattern.
+    // Then initialize ethers, fetch token data, and start polling.
     this._initializeEthers();
     this._getTokenData();
     this._startPollingData();
@@ -425,7 +411,13 @@ export class Dapp extends React.Component {
 
   // This method resets the state
   _resetState() {
+    // Reset the Dapp's state.
     this.setState(this.initialState);
+
+    // Clear the account in the parent as well.
+    if (this.props.setAccount) {
+      this.props.setAccount(null);
+    }
   }
 
   async _switchChain() {

@@ -1,6 +1,6 @@
 #!/bin/sh
-images_dir="/home/alexis/Documents/Blockchain/groupe08/frontend/public/images"
-metadata_dir="./frontend/public/metadata"
+images_dir="../frontend/public/images"
+metadata_dir="../frontend/public/metadata"
 counter=1
 
 # Create metadata directory if it doesn't exist
@@ -8,7 +8,7 @@ mkdir -p "$metadata_dir"
 
 for image in "$images_dir"/*; do
     [ -f "$image" ] || continue
-    image_name=$(basename "$image")
+    image_name=$(basename "$image" | base64 | cut -c1-10)+"=="
     # Create metadata filename by replacing the image extension with .json
     metadata_file="$metadata_dir/${image_name%.*}.json"
     url="https://blockchain-project-live.vercel.app/images/$image_name"

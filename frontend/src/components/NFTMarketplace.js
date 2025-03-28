@@ -317,7 +317,11 @@ export function NFTMarketplace({
   }, [nftMarketContract, myNFTContract, sortOrder]);
 
   if (loading) {
-    return <div>Loading NFT Marketplace...</div>;
+    return (<div className="d-flex flex-column justify-content-center align-items-center vh-100">
+    <div className="spinner-border text-primary" role="status" style={{ width: "4rem", height: "4rem" }}>
+      <span className="visually-hidden">Loading...</span>
+    </div>
+    </div>);
   }
 
   // Filter the user's NFTs

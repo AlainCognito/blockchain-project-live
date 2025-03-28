@@ -1,14 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import urlData from "../contracts/url.json";
+import CreateWallet from "./CreateWallet"; 
 
 export const Help = () => {
   return (
     <div className="container p-4">
       <h1>How to Configure Your MetaMask wallet</h1>
       <p>
-        To interact with our decentralized application, you must connect your
-        MetaMask wallet to our custom network.
+        To interact with my decentralized application, you must connect your
+        MetaMask wallet to my custom network.
       </p>
       <h2>Steps to Set Up MetaMask</h2>
       <ol>
@@ -49,13 +50,6 @@ export const Help = () => {
           on the "<em>Connect Wallet</em>" button on homepage.
         </li>
       </ol>
-      <p>
-        If you need further help, please consult the documentation or contact
-        support.
-      </p>
-      <Link to="/" className="btn btn-primary">
-        Return to Home
-      </Link>
-    </div>
+      </div>
   );
 };

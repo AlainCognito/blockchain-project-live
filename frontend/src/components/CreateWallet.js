@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
 
-export function CreateWallet({ fundWallet }) {
+export function CreateWallet() {
   const [wallet, setWallet] = useState(null);
   const [message, setMessage] = useState("");
 
@@ -11,15 +11,15 @@ export function CreateWallet({ fundWallet }) {
     setWallet(newWallet);
     setMessage("Wallet created. Funding in progress...");
     // If a funding function is provided, call it
-    if (fundWallet) {
-      try {
-        await fundWallet(newWallet.address);
-        setMessage("Funding complete: 1000 ETH and MHT tokens sent!");
-      } catch (error) {
-        console.error(error);
-        setMessage("Error funding wallet");
-      }
-    }
+    // if (fundWallet) {
+    //   try {
+    //     await fundWallet(newWallet.address);
+    //     setMessage("Funding complete: 1000 ETH and MHT tokens sent!");
+    //   } catch (error) {
+    //     console.error(error);
+    //     setMessage("Error funding wallet");
+    //   }
+    // }
   };
 
   return (

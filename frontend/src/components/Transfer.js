@@ -1,6 +1,7 @@
 import React from "react";
 
-export function Transfer({ transferTokens, tokenSymbol }) {
+export function Transfer({ transferTokens, tokenSymbol, className }) {
+  const buttonClass = className || "btn btn-secondary";
   return (
     <div>
       <h4>Transfer</h4>
@@ -24,7 +25,6 @@ export function Transfer({ transferTokens, tokenSymbol }) {
           <input
             className="form-control"
             type="number"
-            step="1"
             name="amount"
             placeholder="1"
             required
@@ -35,7 +35,7 @@ export function Transfer({ transferTokens, tokenSymbol }) {
           <input className="form-control" type="text" name="to" required />
         </div>
         <div className="form-group">
-          <input className="btn btn-primary" type="submit" value="Transfer" />
+          <input className="btn btn-secondary" type="submit" value="Transfer" />
         </div>
       </form>
     </div>

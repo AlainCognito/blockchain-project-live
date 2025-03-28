@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-export function NFTGallery({ myNFTContract, account, onSelectNFT }) {
+export function NFTGallery({ myNFTContract, account, onSelectNFT, onNFTCountUpdate }) {
   const [nfts, setNFTs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,6 +58,11 @@ export function NFTGallery({ myNFTContract, account, onSelectNFT }) {
         });
       }
       setNFTs(items);
+
+      // Pass NFT count back to parent if callback provided
+      if (typeof onNFTCountUpdate === "function") {
+        onNFTCountUpdate(items.length);
+      }
     } catch (error) {
       console.error("Error loading NFTs:", error);
     }
@@ -75,36 +80,41 @@ export function NFTGallery({ myNFTContract, account, onSelectNFT }) {
   return (
     <div>
       <h3>Your NFTs</h3>
-      <div 
-        className="nft-gallery" 
+      <div
+        className="nft-gallery"
         style={{
           display: "flex",
-          flexWrap: "wrap",
-          gap: "1rem"
+          gap: "1rem",
+          overflowX: "auto",
+          paddingBottom: "1rem"
         }}
       >
         {nfts.map((nft) => (
-          <div 
-            key={nft.tokenId} 
-            className="nft-item" 
+          <div
+            key={nft.tokenId}
+            className="nft-item"
             style={{
               border: "1px solid #ccc",
-              padding: "1rem",
-              flex: "0 0 calc(33.33% - 1rem)",
+              padding: "0.5rem",
+              flex: "0 0 calc(25% - 1rem)",
               boxSizing: "border-box",
               cursor: "pointer"
             }}
             onClick={() => onSelectNFT(nft.tokenId)}
           >
-            <h4>{nft.name || `NFT #${nft.tokenId}`}</h4>
+            <h4 style={{ fontSize: "1rem", textAlign: "center" }}>
+              {nft.name || `NFT #${nft.tokenId}`}
+            </h4>
             {nft.image && (
-              <img 
-                src={nft.image} 
-                alt={nft.name || `NFT ${nft.tokenId}`} 
-                style={{ width: "100%", height: "auto" }}
+              <img
+                src={nft.image}
+                alt={nft.name || `NFT ${nft.tokenId}`}
+                style={{ width: "100%", height: "200px", objectFit: "cover" }}
               />
             )}
-            {nft.description && <p>{nft.description}</p>}
+            {nft.description && (
+              <p style={{ fontSize: "0.8rem", textAlign: "center" }}>{nft.description}</p>
+            )}
           </div>
         ))}
       </div>
