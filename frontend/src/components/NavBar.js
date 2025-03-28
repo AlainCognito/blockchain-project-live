@@ -12,7 +12,7 @@ export function NavBar({ account }) {
             alt="Logo"
             style={{ height: "40px", marginRight: "8px" }}
           />
-          WalletZone
+          Home
         </Link>
         <button
           className="navbar-toggler"

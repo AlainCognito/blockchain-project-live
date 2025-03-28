@@ -16,8 +16,8 @@ This Project relies on : -For the backend- Docker to contenairize (?) both runni
 The first things you need to do are cloning this repository, and installing docker-compose and dependencies
 
 ```sh
-git clone https://gitlab.telecomnancy.univ-lorraine.fr/projets/2425/darkduck25/groupe08 
-cd groupe08 
+git clone https://gitlab.telecomnancy.univ-lorraine.fr/projets/2425/darkduck25/groupe08
+cd groupe08
 ```
 
 Then you need to run a local node, I provided and dockerfile to do it inside a container :
@@ -31,7 +31,6 @@ To stop the docker services run :
 ```sh
 docker-compose down
 ```
-
 
 Open [Vercel app](https://blockchain-project-live.vercel.app/). You will
 need to have [Coinbase Wallet](https://www.coinbase.com/wallet) or [Metamask](https://metamask.io) installed and listening to
@@ -75,5 +74,7 @@ This project also includes [a sample frontend/Dapp](./frontend), which uses [Cre
 
 -[x] Figure out a way to host private blockchain node, and link metamask wallet to it
 -- I will be running both
-**The App works great with multiple clients**
--[] Next step is building correct logic behind nft minting, giving some MHT to first connexions, making bids and auctions work...
+**The App works great with multiple clients** -[x] Next step is building correct logic behind nft minting, giving some MHT to first connexions, making bids and auctions work...
+**Not sure about auctions** -[x] Improved UX
+-[] Need to add a pipeline to push artifacts automatically when gitlab is fixed
+-[] Maybe add mail logins ?

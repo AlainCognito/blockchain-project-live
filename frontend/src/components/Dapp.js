@@ -146,7 +146,7 @@ export class Dapp extends React.Component {
                   <h1 className="display-6 text-warning">Wallet</h1>
                   <h1 className="display-6 text-secondary ml-2">Zone</h1>
                 </div>
-                <p className="lead text-left mt-2" style={{ position: "relative", left: "20px" }}>
+                <p className="lead text-left text-secondary mt-2" style={{ position: "relative", left: "20px" }}>
                   This is a simple app that allows you to transfer tokens and NFTs.
                 </p>
               </div>
