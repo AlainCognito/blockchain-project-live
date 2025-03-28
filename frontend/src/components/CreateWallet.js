@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
 
-export function GenerateWallet({ fundWallet }) {
+export function CreateWallet({ fundWallet }) {
   const [wallet, setWallet] = useState(null);
   const [message, setMessage] = useState("");
 
