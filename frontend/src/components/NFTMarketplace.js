@@ -366,14 +366,14 @@ export function NFTMarketplace({
 
   if (loading) {
     return (<div className="d-flex flex-column justify-content-center align-items-center vh-100">
-      <div className="spinner-border text-primary" role="status" style={{ width: "4rem", height: "4rem" }}>
+      <div className="spinner-border text-warning" role="status" style={{ width: "4rem", height: "4rem" }}>
         <span className="visually-hidden">Loading...</span>
       </div>
     </div>);
   }
 
   return (
-    <div className="container">
+    <div className="container p-4">
       <style>{`
         .custom-transparent-btn {
           background-color: transparent !important;
@@ -387,27 +387,17 @@ export function NFTMarketplace({
         }
       `}</style>
       <header className="my-4">
-        <h1>NFT Marketplace</h1>
-        <div className="d-flex align-items-center">
-          <div className="me-3">
-            <label className="form-label mb-0">Sort by Price:</label>
-          </div>
-          <select
-            className="form-select w-auto"
-            value={sortOrder}
-            onChange={handleSortChange}
-          >
-            <option value="priceAsc">Ascending</option>
-            <option value="priceDesc">Descending</option>
-          </select>
-        </div>
+        <h1 className="display-6 text-secondary justify-content-center" > NFTZone</h1>
+
       </header>
 
-      {warningMessage && (
-        <div className="alert alert-warning" role="alert">
-          {warningMessage}
-        </div>
-      )}
+      {
+        warningMessage && (
+          <div className="alert alert-warning" role="alert">
+            {warningMessage}
+          </div>
+        )
+      }
 
       {/* Navigation Tabs */}
       <div className="btn-group mb-4">
@@ -431,188 +421,192 @@ export function NFTMarketplace({
         </button>
       </div>
 
-      {selectedTab === "all" && (
-        <>
-          <h3>All NFTs</h3>
-          <div className="row row-cols-1 row-cols-md-4 g-4">
-            {externalNFTs.slice(0, displayCountAll).map((nft) => (
-              <div key={nft.tokenId} className="col">
-                <div className="card h-100">
-                  {nft.image && (
-                    <img
-                      src={
-                        nft.image.startsWith("http")
-                          ? nft.image
-                          : `https://${nft.image}`
-                      }
-                      className="card-img-top"
-                      alt={nft.name || `NFT ${nft.tokenId}`}
-                    />
-                  )}
-                  <div className="card-body">
-                    <h5 className="card-title">
-                      {nft.name || `NFT #${nft.tokenId}`}
-                    </h5>
-                    <p className="card-text">
-                      Owner:{" "}
-                      {nft.owner
-                        ? nft.owner.slice(0, 6) + "..." + nft.owner.slice(-4)
-                        : "Unknown"}
-                    </p>
-                    {nft.seller &&
-                      account &&
-                      nft.seller.toLowerCase() !== account.toLowerCase() && (
-                        <button
-                          className="btn btn-sm btn-warning"
-                          onClick={() => buyNFT(nft.itemId, nft.price)}
-                        >
-                          Buy NFT
-                        </button>
-                      )}
+      {
+        selectedTab === "all" && (
+          <>
+            <h3>All NFTs</h3>
+            <div className="row row-cols-1 row-cols-md-4 g-4">
+              {externalNFTs.slice(0, displayCountAll).map((nft) => (
+                <div key={nft.tokenId} className="col">
+                  <div className="card h-100">
+                    {nft.image && (
+                      <img
+                        src={
+                          nft.image.startsWith("http")
+                            ? nft.image
+                            : `https://${nft.image}`
+                        }
+                        className="card-img-top"
+                        alt={nft.name || `NFT ${nft.tokenId}`}
+                      />
+                    )}
+                    <div className="card-body">
+                      <h5 className="card-title">
+                        {nft.name || `NFT #${nft.tokenId}`}
+                      </h5>
+                      <p className="card-text">
+                        Owner:{" "}
+                        {nft.owner
+                          ? nft.owner.slice(0, 6) + "..." + nft.owner.slice(-4)
+                          : "Unknown"}
+                      </p>
+                      {nft.seller &&
+                        account &&
+                        nft.seller.toLowerCase() !== account.toLowerCase() && (
+                          <button
+                            className="btn btn-sm btn-warning"
+                            onClick={() => buyNFT(nft.itemId, nft.price)}
+                          >
+                            Buy NFT
+                          </button>
+                        )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          {externalNFTs.length > displayCountAll && (
-            <div className="text-center my-4">
-              <button
-                className="btn custom-transparent-btn"
-                onClick={() =>
-                  setDisplayCountAll((prev) =>
-                    Math.min(prev + 4, externalNFTs.length)
-                  )
-                }
-              >
-                ...
-              </button>
+              ))}
             </div>
-          )}
-        </>
-      )}
+            {externalNFTs.length > displayCountAll && (
+              <div className="text-center my-4">
+                <button
+                  className="btn custom-transparent-btn"
+                  onClick={() =>
+                    setDisplayCountAll((prev) =>
+                      Math.min(prev + 4, externalNFTs.length)
+                    )
+                  }
+                >
+                  ...
+                </button>
+              </div>
+            )}
+          </>
+        )
+      }
 
-      {selectedTab === "my" && (
-        <>
-          <h3>My NFTs</h3>
-          {activeListings.length > 0 && (
-            <div>
-              <h4>Active Listings</h4>
-              <div className="row row-cols-1 row-cols-md-4 g-4">
-                {activeListings.slice(0, displayCountActive).map((nft) => (
-                  <div key={nft.tokenId} className="col">
-                    <div className="card h-100">
-                      {nft.image && (
-                        <img
-                          src={
-                            nft.image.startsWith("http")
-                              ? nft.image
-                              : `https://${nft.image}`
-                          }
-                          className="card-img-top"
-                          alt={nft.name || `NFT ${nft.tokenId}`}
-                        />
-                      )}
-                      <div className="card-body">
-                        <h5 className="card-title">
-                          {nft.name || `NFT #${nft.tokenId}`}
-                        </h5>
-                        <p className="card-text">
-                          Price: {nft.price} MHT
-                        </p>
-                        <p className="card-text">
-                          Listed by:{" "}
-                          {nft.seller
-                            ? nft.seller.slice(0, 6) + "..." + nft.seller.slice(-4)
-                            : "Unknown"}
-                        </p>
-                        <button
-                          className="btn btn-sm btn-danger"
-                          onClick={() => cancelListing(nft.itemId)}
-                        >
-                          Cancel Listing
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {unlistedNFTs.length > 0 && (
-            <div className="mt-4">
-              <h4>Your Unlisted NFTs</h4>
-              <div className="row row-cols-1 row-cols-md-4 g-4">
-                {unlistedNFTs.slice(0, displayCountUnlisted).map((nft) => (
-                  <div key={nft.tokenId} className="col">
-                    <div className="card h-100">
-                      {nft.image && (
-                        <img
-                          src={
-                            nft.image.startsWith("http")
-                              ? nft.image
-                              : `https://${nft.image}`
-                          }
-                          className="card-img-top"
-                          alt={nft.name || `NFT ${nft.tokenId}`}
-                        />
-                      )}
-                      <div className="card-body">
-                        <h5 className="card-title">
-                          {nft.name || `NFT #${nft.tokenId}`}
-                        </h5>
-                        <p className="card-text">
-                          Owner:{" "}
-                          {nft.owner
-                            ? nft.owner.slice(0, 6) + "..." + nft.owner.slice(-4)
-                            : "Unknown"}
-                        </p>
-                        {selectedForListing !== nft.tokenId ? (
-                          <button
-                            className="btn btn-sm btn-success"
-                            onClick={() => setSelectedForListing(nft.tokenId)}
-                          >
-                            List NFT for Sale
-                          </button>
-                        ) : (
-                          <form onSubmit={createListingNFT}>
-                            <input
-                              type="hidden"
-                              name="tokenId"
-                              value={nft.tokenId}
-                            />
-                            <input
-                              name="price"
-                              placeholder="Price in MHT"
-                              required
-                              className="form-control mb-2"
-                            />
-                            <div className="d-flex">
-                              <button
-                                type="submit"
-                                className="btn btn-sm btn-success me-2"
-                              >
-                                Submit Listing
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setSelectedForListing("")}
-                                className="btn btn-sm btn-secondary"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </form>
+      {
+        selectedTab === "my" && (
+          <>
+            <h3>My NFTs</h3>
+            {activeListings.length > 0 && (
+              <div>
+                <h4>Active Listings</h4>
+                <div className="row row-cols-1 row-cols-md-4 g-4">
+                  {activeListings.slice(0, displayCountActive).map((nft) => (
+                    <div key={nft.tokenId} className="col">
+                      <div className="card h-100">
+                        {nft.image && (
+                          <img
+                            src={
+                              nft.image.startsWith("http")
+                                ? nft.image
+                                : `https://${nft.image}`
+                            }
+                            className="card-img-top"
+                            alt={nft.name || `NFT ${nft.tokenId}`}
+                          />
                         )}
+                        <div className="card-body">
+                          <h5 className="card-title">
+                            {nft.name || `NFT #${nft.tokenId}`}
+                          </h5>
+                          <p className="card-text">
+                            Price: {nft.price} MHT
+                          </p>
+                          <p className="card-text">
+                            Listed by:{" "}
+                            {nft.seller
+                              ? nft.seller.slice(0, 6) + "..." + nft.seller.slice(-4)
+                              : "Unknown"}
+                          </p>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => cancelListing(nft.itemId)}
+                          >
+                            Cancel Listing
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
+            )}
+            {unlistedNFTs.length > 0 && (
+              <div className="mt-4">
+                <h4>Your Unlisted NFTs</h4>
+                <div className="row row-cols-1 row-cols-md-4 g-4">
+                  {unlistedNFTs.slice(0, displayCountUnlisted).map((nft) => (
+                    <div key={nft.tokenId} className="col">
+                      <div className="card h-100">
+                        {nft.image && (
+                          <img
+                            src={
+                              nft.image.startsWith("http")
+                                ? nft.image
+                                : `https://${nft.image}`
+                            }
+                            className="card-img-top"
+                            alt={nft.name || `NFT ${nft.tokenId}`}
+                          />
+                        )}
+                        <div className="card-body">
+                          <h5 className="card-title">
+                            {nft.name || `NFT #${nft.tokenId}`}
+                          </h5>
+                          <p className="card-text">
+                            Owner:{" "}
+                            {nft.owner
+                              ? nft.owner.slice(0, 6) + "..." + nft.owner.slice(-4)
+                              : "Unknown"}
+                          </p>
+                          {selectedForListing !== nft.tokenId ? (
+                            <button
+                              className="btn btn-sm btn-success"
+                              onClick={() => setSelectedForListing(nft.tokenId)}
+                            >
+                              List NFT for Sale
+                            </button>
+                          ) : (
+                            <form onSubmit={createListingNFT}>
+                              <input
+                                type="hidden"
+                                name="tokenId"
+                                value={nft.tokenId}
+                              />
+                              <input
+                                name="price"
+                                placeholder="Price in MHT"
+                                required
+                                className="form-control mb-2"
+                              />
+                              <div className="d-flex">
+                                <button
+                                  type="submit"
+                                  className="btn btn-sm btn-success me-2"
+                                >
+                                  Submit Listing
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedForListing("")}
+                                  className="btn btn-sm btn-secondary"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </form>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-            </div>
-          )}
-        </>
-      )}
+              </div>
+            )}
+          </>
+        )
+      }
 
       <div className="my-4">
         <Link
@@ -622,7 +616,20 @@ export function NFTMarketplace({
         >
           Return Home
         </Link>
+        <div className="d-flex align-items-center">
+          <div className="me-3">
+            <label className="form-label mb-0">Sort by Price:</label>
+          </div>
+          <select
+            className="form-select w-auto"
+            value={sortOrder}
+            onChange={handleSortChange}
+          >
+            <option value="priceAsc">Ascending</option>
+            <option value="priceDesc">Descending</option>
+          </select>
+        </div>
       </div>
-    </div>
+    </div >
   );
 }

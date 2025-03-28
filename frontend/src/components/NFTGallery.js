@@ -70,7 +70,11 @@ export function NFTGallery({ myNFTContract, account, onSelectNFT, onNFTCountUpda
   }
 
   if (loading) {
-    return <div>Loading your NFTs...</div>;
+    return (<div className="d-flex flex-column justify-content-center align-items-center vh-100">
+      <div className="spinner-border text-warning" role="status" style={{ width: "4rem", height: "4rem" }}>
+        <span className="visually-hidden">Loading...</span>
+      </div>
+    </div>);
   }
 
   if (nfts.length === 0) {

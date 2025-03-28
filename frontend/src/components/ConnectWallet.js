@@ -4,10 +4,9 @@ import { NetworkErrorMessage } from "./NetworkErrorMessage";
 
 export function ConnectWallet({ connectWallet, networkError, dismiss }) {
   return (
-    <div className="container">
-      <div className="row justify-content-md-center">
+    <div className="container vh-100 d-flex justify-content-center align-items-center">
+      <div className="row justify-content-md-center w-100">
         <div className="col-12 text-center">
-          {/* Wallet network should be set to ngrok url */}
           {networkError && (
             <NetworkErrorMessage message={networkError} dismiss={dismiss} />
           )}
@@ -22,7 +21,7 @@ export function ConnectWallet({ connectWallet, networkError, dismiss }) {
             Connect Wallet
           </button>
           <div className="mt-3">
-            <Link to="/help" className="btn btn-link">
+            <Link to="/help" className="btn btn-link-warning">
               Need help?
             </Link>
           </div>

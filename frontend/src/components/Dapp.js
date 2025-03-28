@@ -124,88 +124,119 @@ export class Dapp extends React.Component {
 
     // If everything is loaded, we render the application.
     return (
-      <div className="container p-4">
-        <div className="row">
-          <div className="col-12">
-            <h1 className="display-4 text-warning">
-              {this.state.tokenData.name}{" "}
-              <small className="text-muted">({this.state.tokenData.symbol})</small>
-            </h1>
-            <p className="lead">
-              Welcome <b>{this.state.selectedAddress}</b>, you have{" "}
-              <b>
-                {this.state.balance.toString()} {this.state.tokenData.symbol}
-              </b>.
-            </p>
+      <>
+        {/* Full-width Wallet Zone Header */}
+        <div className="wallet-zone-container">
+          <div className="container-fluid">
+            <div className="row">
+              <div className="col text-start">
+                <style>{`
+                  .wallet-zone-header {
+                    display: flex;
+                    align-items: baseline;
+
+                    
+                  }
+                  .wallet-zone-header h2 {
+                    margin: 0;
+                  
+                    }
+                `}</style>
+                <div className="wallet-zone-header" style={{ position: "relative", left: "20px", top: "0px" }}>
+                  <h1 className="display-6 text-warning">Wallet</h1>
+                  <h1 className="display-6 text-secondary ml-2">Zone</h1>
+                </div>
+                <p className="lead text-left mt-2" style={{ position: "relative", left: "20px" }}>
+                  This is a simple app that allows you to transfer tokens and NFTs.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <hr />
-
-        <div className="row">
-          <div className="col-12">
-            {this.state.txBeingSent && (
-              <WaitingForTransactionMessage txHash={this.state.txBeingSent} />
-            )}
-            {this.state.transactionError && (
-              <TransactionErrorMessage
-                message={this._getRpcErrorMessage(this.state.transactionError)}
-                dismiss={() => this._dismissTransactionError()}
-              />
-            )}
+        {/* Fixed-width content */}
+        <div className="container p-4">
+          {/* Token Data Header */}
+          <div className="row mt-4">
+            <div className="col">
+              <h4 className="display-6 text-warning">
+                {this.state.tokenData.name}{" "}
+                <small className="text-muted">({this.state.tokenData.symbol})</small>
+              </h4>
+              <p className="lead">
+                Welcome <b>{this.state.selectedAddress}</b>, you have{" "}
+                <b>
+                  {this.state.balance.toString()} {this.state.tokenData.symbol}
+                </b>.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="row">
-          <div className="col-12">
-            {this.state.balance.eq(0) && (
-              <NoTokensMessage selectedAddress={this.state.selectedAddress} />
-            )}
-            {this.state.balance.gt(0) && (
-              <Transfer className="btn btn-secondary"
-                transferTokens={(to, amount) =>
-                  this._transferTokens(to, amount)
-                }
-                tokenSymbol={this.state.tokenData.symbol}
-              />
-            )}
-          </div>
-        </div>
-        <hr />
+          <hr />
 
-        {/* NFT Gallery and NFT Transfer arranged side by side */}
-        <div className="row">
-          <div className="col-md-8">
-            <NFTGallery
-              myNFTContract={this._myNFT}
-              account={this.state.selectedAddress}
-              onSelectNFT={this._selectNFT}
-              onNFTCountUpdate={(count) => this.setState({ nftsCount: count })}
-            />
+          <div className="row">
+            <div className="col-12">
+              {this.state.txBeingSent && (
+                <WaitingForTransactionMessage txHash={this.state.txBeingSent} />
+              )}
+              {this.state.transactionError && (
+                <TransactionErrorMessage
+                  message={this._getRpcErrorMessage(this.state.transactionError)}
+                  dismiss={() => this._dismissTransactionError()}
+                />
+              )}
+            </div>
           </div>
-          {this.state.nftsCount > 0 && (
-            <div className="col-md-4">
-              <TransferNFT
-                transferNFT={(to, tokenId) => this._transferNFT(to, tokenId)}
-                tokenId={this.state.selectedTokenId}
+
+          <div className="row">
+            <div className="col-12">
+              {this.state.balance.eq(0) && (
+                <NoTokensMessage selectedAddress={this.state.selectedAddress} />
+              )}
+              {this.state.balance.gt(0) && (
+                <Transfer
+                  className="btn btn-secondary"
+                  transferTokens={(to, amount) => this._transferTokens(to, amount)}
+                  tokenSymbol={this.state.tokenData.symbol}
+                />
+              )}
+            </div>
+          </div>
+          <hr />
+
+          {/* NFT Gallery and NFT Transfer arranged side by side */}
+          <div className="row">
+            <div className="col-md-8">
+              <NFTGallery
+                myNFTContract={this._myNFT}
+                account={this.state.selectedAddress}
+                onSelectNFT={this._selectNFT}
+                onNFTCountUpdate={(count) => this.setState({ nftsCount: count })}
               />
             </div>
-          )}
+            {this.state.nftsCount > 0 && (
+              <div className="col-md-4">
+                <TransferNFT
+                  transferNFT={(to, tokenId) => this._transferNFT(to, tokenId)}
+                  tokenId={this.state.selectedTokenId}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Existing navigation links */}
+          <Link
+            to="/nft-marketplace"
+            state={{ account: this.state.selectedAddress }}
+            className="btn btn-warning mr-2"
+          >
+            Visit NFT Marketplace
+          </Link>
+          <Link to="/help" className="btn custom-transparent-btn">
+            Help
+          </Link>
         </div>
-
-        {/* Existing navigation links */}
-        <Link
-          to="/nft-marketplace"
-          state={{ account: this.state.selectedAddress }}
-          className="btn btn-warning mr-2"
-        >
-          Visit NFT Marketplace
-        </Link>
-        <Link to="/help" className="btn btn-secondary">
-          Help
-        </Link>
-
-      </div>
+      </>
     );
   }
 

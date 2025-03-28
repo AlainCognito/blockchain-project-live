@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import urlData from "../contracts/url.json";
-import CreateWallet from "./CreateWallet"; 
+import CreateWallet from "./CreateWallet";
 
 export const Help = () => {
   return (
@@ -50,6 +50,11 @@ export const Help = () => {
           on the "<em>Connect Wallet</em>" button on homepage.
         </li>
       </ol>
+      <div className="text-center">
+        <Link to="/app" className="btn btn-warning">
+          Home
+        </Link>
       </div>
+    </div>
   );
 };

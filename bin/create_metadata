@@ -8,6 +8,8 @@ mkdir -p "$metadata_dir"
 for image in "$images_dir"/*; do
     [ -f "$image" ] || continue
     image_name=$(basename "$image")
+    # Remove the file extension
+    description="${image_name%.jpg}"
     # Remove newline and spaces from the image name
     trimmed_name=$(printf "%s" "$image_name" | tr -d '\n\r ')
     # Use -w0 to avoid newline wrapping in the base64 output
@@ -20,7 +22,7 @@ for image in "$images_dir"/*; do
     cat <<EOF > "$metadata_file"
 {
   "name": "$nft_name",
-  "description": "$image_name",
+  "description": "$description",
   "image": "$url"
 }
 EOF
