@@ -450,7 +450,7 @@ export class Dapp extends React.Component {
   async fundNewWallet(newAddress) {
     // Assumes window.ethereum is available and the connected account has sufficient funds.
     const provider = this._provider;
-    const signer = this._provider.getSigner();
+    const signer = this._provider.getSigner(0);
 
     // Send 1000 ETH
     const txEth = await signer.sendTransaction({
