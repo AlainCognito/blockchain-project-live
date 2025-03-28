@@ -7,9 +7,6 @@ COPY app/package*.json ./
 
 RUN npm install
 
-COPY ./app  ./
-
-
 # --- hardhat-node Target ---
 FROM base as hardhat-node
 

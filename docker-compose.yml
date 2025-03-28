@@ -7,6 +7,7 @@ services:
     volumes:
       - ./frontend/src/contracts:/frontend/src/contracts
       - ./frontend/public/metadata:/frontend/public/metadata
+      - ./app:/app
     restart: unless-stopped
 
   ngrok:
