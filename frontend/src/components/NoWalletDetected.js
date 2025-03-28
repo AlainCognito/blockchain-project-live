@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export function NoWalletDetected() {
   return (
@@ -22,6 +23,11 @@ export function NoWalletDetected() {
             .
           </p>
         </div>
+      </div>
+      <div className="mt-3">
+        <Link to="/help" className="btn btn-link">
+          Need help?
+        </Link>
       </div>
     </div>
   );

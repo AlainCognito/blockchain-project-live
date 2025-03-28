@@ -23,6 +23,29 @@ export function NFTMarketplace({
   const [bids, setBids] = useState({}); // bid amounts keyed by tokenId or itemId
   const [selectedForListing, setSelectedForListing] = useState(""); // tokenId selected to list
   const [sortOrder, setSortOrder] = useState("priceAsc"); // "priceAsc" or "priceDesc"
+  const [warningMessage, setWarningMessage] = useState(""); // New warning message state
+  // New state: selectedTab can be "all" or "my"
+  const [selectedTab, setSelectedTab] = useState("all");
+  const [displayCountAll, setDisplayCountAll] = useState(8);
+  const [displayCountActive, setDisplayCountActive] = useState(8);
+  const [displayCountUnlisted, setDisplayCountUnlisted] = useState(8);
+  // Filter the user's NFTs
+  const userNFTs = nfts.filter((nft) => nft.owner === account?.toLowerCase());
+  const activeListings = userNFTs.filter((nft) => nft.seller);
+  const unlistedNFTs = userNFTs.filter((nft) => !nft.seller);
+
+  // Create an external NFTs list (i.e. non-user NFTs) for main grid display.
+  // This removes duplicates of NFTs already shown in user-specific sections.
+  const externalNFTs = nfts.filter((nft) => nft.owner !== account?.toLowerCase());
+
+  // Show warningMessage as an alert pop-up whenever it updates.
+  useEffect(() => {
+    if (warningMessage) {
+      window.alert(warningMessage);
+      // Clear warning message after alert so it only appears once
+      setWarningMessage("");
+    }
+  }, [warningMessage]);
 
   // Initialize contracts – always initialize NFTMarket; use dApp-provided MyNFT if available.
   async function initializeContracts() {
@@ -236,6 +259,12 @@ export function NFTMarketplace({
         TokenArtifact.abi,
         signer
       );
+      // Check buyer token balance
+      const balance = await tokenContract.balanceOf(account);
+      if (balance.lt(price)) {
+        setWarningMessage("Insufficient token balance to purchase this NFT.");
+        return; // stop execution if insufficient funds
+      }
       // Check if the buyer has approved enough tokens for NFTMarket to pull the purchase price.
       const buyerAllowance = await tokenContract.allowance(
         account,
@@ -254,8 +283,11 @@ export function NFTMarketplace({
       const tx = await nftMarketContract.purchaseMarketItem(itemId);
       await tx.wait();
       loadAllNFTs();
+      // Clear any previous warning message
+      setWarningMessage("");
     } catch (err) {
       console.error("Error buying NFT:", err);
+      setWarningMessage("Error processing purchase. Please try again.");
     }
   }
 
@@ -316,21 +348,44 @@ export function NFTMarketplace({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nftMarketContract, myNFTContract, sortOrder]);
 
+  useEffect(() => {
+    function handleScroll() {
+      // When the user is near the bottom of the page
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+        if (selectedTab === "all") {
+          setDisplayCountAll(prev => Math.min(prev + 4, externalNFTs.length));
+        } else if (selectedTab === "my") {
+          setDisplayCountActive(prev => Math.min(prev + 4, activeListings.length));
+          setDisplayCountUnlisted(prev => Math.min(prev + 4, unlistedNFTs.length));
+        }
+      }
+    }
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [selectedTab, externalNFTs, activeListings, unlistedNFTs]);
+
   if (loading) {
     return (<div className="d-flex flex-column justify-content-center align-items-center vh-100">
-    <div className="spinner-border text-primary" role="status" style={{ width: "4rem", height: "4rem" }}>
-      <span className="visually-hidden">Loading...</span>
-    </div>
+      <div className="spinner-border text-primary" role="status" style={{ width: "4rem", height: "4rem" }}>
+        <span className="visually-hidden">Loading...</span>
+      </div>
     </div>);
   }
 
-  // Filter the user's NFTs
-  const userNFTs = nfts.filter((nft) => nft.owner === account?.toLowerCase());
-  const activeListings = userNFTs.filter((nft) => nft.seller);
-  const unlistedNFTs = userNFTs.filter((nft) => !nft.seller);
-
   return (
     <div className="container">
+      <style>{`
+        .custom-transparent-btn {
+          background-color: transparent !important;
+          border: 1px solid transparent !important;
+          color: inherit;
+        }
+        .custom-transparent-btn:hover {
+          background-color: transparent !important;
+          border: 1px solidrgba(255, 193, 7, 0) !important;
+          color: #ffc107 !important;
+        }
+      `}</style>
       <header className="my-4">
         <h1>NFT Marketplace</h1>
         <div className="d-flex align-items-center">
@@ -348,14 +403,102 @@ export function NFTMarketplace({
         </div>
       </header>
 
-      {/* New row: only if the user owns any NFTs */}
-      {userNFTs.length > 0 && (
-        <div className="row mb-4">
+      {warningMessage && (
+        <div className="alert alert-warning" role="alert">
+          {warningMessage}
+        </div>
+      )}
+
+      {/* Navigation Tabs */}
+      <div className="btn-group mb-4">
+        <button
+          className={
+            "btn " +
+            (selectedTab === "all" ? "btn-warning" : "btn-outline-warning")
+          }
+          onClick={() => setSelectedTab("all")}
+        >
+          All NFTs
+        </button>
+        <button
+          className={
+            "btn " +
+            (selectedTab === "my" ? "btn-warning" : "btn-outline-warning")
+          }
+          onClick={() => setSelectedTab("my")}
+        >
+          My NFTs
+        </button>
+      </div>
+
+      {selectedTab === "all" && (
+        <>
+          <h3>All NFTs</h3>
+          <div className="row row-cols-1 row-cols-md-4 g-4">
+            {externalNFTs.slice(0, displayCountAll).map((nft) => (
+              <div key={nft.tokenId} className="col">
+                <div className="card h-100">
+                  {nft.image && (
+                    <img
+                      src={
+                        nft.image.startsWith("http")
+                          ? nft.image
+                          : `https://${nft.image}`
+                      }
+                      className="card-img-top"
+                      alt={nft.name || `NFT ${nft.tokenId}`}
+                    />
+                  )}
+                  <div className="card-body">
+                    <h5 className="card-title">
+                      {nft.name || `NFT #${nft.tokenId}`}
+                    </h5>
+                    <p className="card-text">
+                      Owner:{" "}
+                      {nft.owner
+                        ? nft.owner.slice(0, 6) + "..." + nft.owner.slice(-4)
+                        : "Unknown"}
+                    </p>
+                    {nft.seller &&
+                      account &&
+                      nft.seller.toLowerCase() !== account.toLowerCase() && (
+                        <button
+                          className="btn btn-sm btn-warning"
+                          onClick={() => buyNFT(nft.itemId, nft.price)}
+                        >
+                          Buy NFT
+                        </button>
+                      )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {externalNFTs.length > displayCountAll && (
+            <div className="text-center my-4">
+              <button
+                className="btn custom-transparent-btn"
+                onClick={() =>
+                  setDisplayCountAll((prev) =>
+                    Math.min(prev + 4, externalNFTs.length)
+                  )
+                }
+              >
+                ...
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {selectedTab === "my" && (
+        <>
+          <h3>My NFTs</h3>
           {activeListings.length > 0 && (
-            <div className="col-12">
-              <h3>Active Listings</h3>
+            <div>
+              <h4>Active Listings</h4>
               <div className="row row-cols-1 row-cols-md-4 g-4">
-                {activeListings.map((nft) => (
+                {activeListings.slice(0, displayCountActive).map((nft) => (
                   <div key={nft.tokenId} className="col">
                     <div className="card h-100">
                       {nft.image && (
@@ -373,12 +516,14 @@ export function NFTMarketplace({
                         <h5 className="card-title">
                           {nft.name || `NFT #${nft.tokenId}`}
                         </h5>
-                        <p className="card-text">Price: {nft.price} MHT</p>
+                        <p className="card-text">
+                          Price: {nft.price} MHT
+                        </p>
                         <p className="card-text">
                           Listed by:{" "}
-                          {nft.seller.slice(0, 6) +
-                            "..." +
-                            nft.seller.slice(-4)}
+                          {nft.seller
+                            ? nft.seller.slice(0, 6) + "..." + nft.seller.slice(-4)
+                            : "Unknown"}
                         </p>
                         <button
                           className="btn btn-sm btn-danger"
@@ -393,12 +538,11 @@ export function NFTMarketplace({
               </div>
             </div>
           )}
-
           {unlistedNFTs.length > 0 && (
-            <div className="col-12 mt-4">
-              <h3>Your Unlisted NFTs</h3>
+            <div className="mt-4">
+              <h4>Your Unlisted NFTs</h4>
               <div className="row row-cols-1 row-cols-md-4 g-4">
-                {unlistedNFTs.map((nft) => (
+                {unlistedNFTs.slice(0, displayCountUnlisted).map((nft) => (
                   <div key={nft.tokenId} className="col">
                     <div className="card h-100">
                       {nft.image && (
@@ -419,14 +563,12 @@ export function NFTMarketplace({
                         <p className="card-text">
                           Owner:{" "}
                           {nft.owner
-                            ? nft.owner.slice(0, 6) +
-                              "..." +
-                              nft.owner.slice(-4)
+                            ? nft.owner.slice(0, 6) + "..." + nft.owner.slice(-4)
                             : "Unknown"}
                         </p>
                         {selectedForListing !== nft.tokenId ? (
                           <button
-                            className="btn btn-sm btn-primary"
+                            className="btn btn-sm btn-success"
                             onClick={() => setSelectedForListing(nft.tokenId)}
                           >
                             List NFT for Sale
@@ -466,121 +608,18 @@ export function NFTMarketplace({
                   </div>
                 ))}
               </div>
+
             </div>
           )}
-        </div>
+        </>
       )}
 
-      {/* All NFTs grid */}
-      <div className="row row-cols-1 row-cols-md-4 g-4">
-        {nfts.map((nft) => (
-          <div key={nft.tokenId} className="col">
-            <div className="card h-100">
-              {nft.image && (
-                <img
-                  src={
-                    nft.image.startsWith("http")
-                      ? nft.image
-                      : `https://${nft.image}`
-                  }
-                  className="card-img-top"
-                  alt={nft.name || `NFT ${nft.tokenId}`}
-                />
-              )}
-              <div className="card-body">
-                <h5 className="card-title">
-                  {nft.name || `NFT #${nft.tokenId}`}
-                </h5>
-                <p className="card-text">
-                  Owner:{" "}
-                  {nft.owner
-                    ? nft.owner.slice(0, 6) + "..." + nft.owner.slice(-4)
-                    : "Unknown"}
-                </p>
-                {nft.owner === account?.toLowerCase() && !nft.seller && (
-                  <>
-                    {selectedForListing !== nft.tokenId ? (
-                      <button
-                        className="btn btn-sm btn-primary"
-                        onClick={() => setSelectedForListing(nft.tokenId)}
-                      >
-                        List NFT for Sale
-                      </button>
-                    ) : (
-                      <form onSubmit={createListingNFT}>
-                        <input
-                          type="hidden"
-                          name="tokenId"
-                          value={nft.tokenId}
-                        />
-                        <input
-                          name="price"
-                          placeholder="Price in MHT"
-                          required
-                          className="form-control mb-2"
-                        />
-                        <div className="d-flex">
-                          <button
-                            type="submit"
-                            className="btn btn-sm btn-success me-2"
-                          >
-                            Submit Listing
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedForListing("")}
-                            className="btn btn-sm btn-secondary"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </form>
-                    )}
-                  </>
-                )}
-
-                {nft.seller && (
-                  <div>
-                    <p className="mb-1">
-                      Listed by:{" "}
-                      {nft.seller.slice(0, 6) + "..." + nft.seller.slice(-4)}
-                    </p>
-                    <p className="mb-1">Price: {nft.price} MHT</p>
-                    {account &&
-                      nft.seller.toLowerCase() !== account.toLowerCase() && (
-                        <button
-                          className="btn btn-sm btn-warning"
-                          onClick={() => buyNFT(nft.itemId, nft.price)}
-                        >
-                          Buy NFT
-                        </button>
-                      )}
-                    {account &&
-                      nft.seller.toLowerCase() === account.toLowerCase() && (
-                        <div>
-                          <p className="text-muted">You listed this NFT</p>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => cancelListing(nft.itemId)}
-                          >
-                            Cancel Listing
-                          </button>
-                        </div>
-                      )}
-                  </div>
-                )}
-
-                {!nft.seller && nft.owner !== account?.toLowerCase() && (
-                  <p className="text-muted">Not listed for sale</p>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
       <div className="my-4">
-        <Link to="/app" state={{ account }} className="btn btn-primary">
+        <Link
+          to="/app"
+          state={{ account }}
+          className="btn custom-transparent-btn"
+        >
           Return Home
         </Link>
       </div>

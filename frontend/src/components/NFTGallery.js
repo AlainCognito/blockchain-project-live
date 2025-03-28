@@ -109,7 +109,7 @@ export function NFTGallery({ myNFTContract, account, onSelectNFT, onNFTCountUpda
               <img
                 src={nft.image}
                 alt={nft.name || `NFT ${nft.tokenId}`}
-                style={{ width: "100%", height: "200px", objectFit: "cover" }}
+                style={{ width: "250px", height: "250px", objectFit: "cover" }}
               />
             )}
             {nft.description && (

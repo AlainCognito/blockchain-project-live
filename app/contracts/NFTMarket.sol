@@ -52,6 +52,8 @@ contract NFTMarket is ReentrancyGuard {
         uint256 price
     );
 
+    event MarketItemCancelled(uint256 indexed itemId, address indexed seller);
+
     constructor(address tokenAddress, uint256 _listingFee) {
         owner = payable(msg.sender);
         paymentToken = IERC20(tokenAddress);
@@ -137,6 +139,21 @@ contract NFTMarket is ReentrancyGuard {
             msg.sender,
             item.price
         );
+    }
+
+    /// @notice Cancel a market item listing.
+    function cancelMarketItem(uint256 itemId) public nonReentrant {
+        Marketitem storage item = idToMarketItem[itemId];
+        require(item.itemId > 0, "Item does not exist");
+        require(!item.sold, "Item already sold");
+        require(item.seller == msg.sender, "Only seller can cancel listing");
+
+        // Mark the item as cancelled by setting owner back to seller and marking as sold
+        item.owner = payable(msg.sender);
+        item.sold = true;
+        _itemsSold.increment();
+
+        emit MarketItemCancelled(itemId, msg.sender);
     }
 
     /// @notice Fetch all active (unsold) market items.

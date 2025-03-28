@@ -3,6 +3,16 @@ import React from "react";
 export function TransferNFT({ transferNFT, tokenId }) {
   return (
     <div>
+      <style>{`
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+      `}</style>
       <h4>Transfer NFT</h4>
       <form
         onSubmit={(event) => {
@@ -30,9 +40,9 @@ export function TransferNFT({ transferNFT, tokenId }) {
           <input className="form-control" type="text" name="to" required />
         </div>
         <div className="form-group">
-          <input className="btn btn-primary" type="submit" value="Transfer" />
+          <input className="btn btn-secondary" type="submit" value="Transfer" />
         </div>
       </form>
-    </div>
+    </div >
   );
 }

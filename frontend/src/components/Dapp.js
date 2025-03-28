@@ -92,6 +92,7 @@ export class Dapp extends React.Component {
   }
 
   render() {
+    <SpeedInsights />
     // Ethereum wallets inject the window.ethereum object. If it hasn't been
     // injected, we instruct the user to install a wallet.
     if (window.ethereum === undefined) {
@@ -203,7 +204,7 @@ export class Dapp extends React.Component {
         <Link to="/help" className="btn btn-secondary">
           Help
         </Link>
-        <SpeedInsights />
+
       </div>
     );
   }
