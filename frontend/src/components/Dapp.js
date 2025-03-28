@@ -21,7 +21,6 @@ import { TransactionErrorMessage } from "./TransactionErrorMessage";
 import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
 import { NoTokensMessage } from "./NoTokensMessage";
 import { NFTGallery } from "./NFTGallery";
-import { CreateWallet } from "./CreateWallet";
 
 // This is the default id used by the Hardhat Network
 const HARDHAT_NETWORK_ID = "31337";
@@ -103,16 +102,11 @@ export class Dapp extends React.Component {
     // Note that we pass it a callback that is going to be called when the user
     // clicks a button. This callback just calls the _connectWallet method.
     if (!this.state.selectedAddress) {
-      // return (
-      //   <ConnectWallet
-      //     connectWallet={() => this._connectWallet()}
-      //     networkError={this.state.networkError}
-      //     dismiss={() => this._dismissNetworkError()}
-      //   />
-      // );
       return (
-        <CreateWallet
-          fundWallet={(newAddress) => this.fundNewWallet(newAddress)}
+        <ConnectWallet
+          connectWallet={() => this._connectWallet()}
+          networkError={this.state.networkError}
+          dismiss={() => this._dismissNetworkError()}
         />
       );
     }
@@ -446,22 +440,5 @@ export class Dapp extends React.Component {
     if (window.ethereum.networkVersion !== HARDHAT_NETWORK_ID) {
       this._switchChain();
     }
-  }
-  async fundNewWallet(newAddress) {
-    // Assumes window.ethereum is available and the connected account has sufficient funds.
-    const provider = this._provider;
-    const signer = this._provider.getSigner(0);
-
-    // Send 1000 ETH
-    const txEth = await signer.sendTransaction({
-      to: newAddress,
-      value: ethers.utils.parseEther("1000"),
-    });
-    await txEth.wait();
-
-    // Send 1000 MHT tokens
-    const tokenAmount = ethers.utils.parseUnits("100000", 0);
-    const txToken = await this._token.transfer(newAddress, tokenAmount);
-    await txToken.wait();
   }
 }
