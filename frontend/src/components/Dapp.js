@@ -21,6 +21,7 @@ import { TransactionErrorMessage } from "./TransactionErrorMessage";
 import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
 import { NoTokensMessage } from "./NoTokensMessage";
 import { NFTGallery } from "./NFTGallery";
+import { CreateWallet } from "./CreateWallet";
 
 // This is the default id used by the Hardhat Network
 const HARDHAT_NETWORK_ID = "31337";
@@ -102,11 +103,16 @@ export class Dapp extends React.Component {
     // Note that we pass it a callback that is going to be called when the user
     // clicks a button. This callback just calls the _connectWallet method.
     if (!this.state.selectedAddress) {
+      // return (
+      //   <ConnectWallet
+      //     connectWallet={() => this._connectWallet()}
+      //     networkError={this.state.networkError}
+      //     dismiss={() => this._dismissNetworkError()}
+      //   />
+      // );
       return (
-        <ConnectWallet
-          connectWallet={() => this._connectWallet()}
-          networkError={this.state.networkError}
-          dismiss={() => this._dismissNetworkError()}
+        <CreateWallet
+          fundWallet={(newAddress) => this.fundNewWallet(newAddress)}
         />
       );
     }
@@ -443,8 +449,8 @@ export class Dapp extends React.Component {
   }
   async fundNewWallet(newAddress) {
     // Assumes window.ethereum is available and the connected account has sufficient funds.
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
+    const provider = this._provider;
+    const signer = this._provider.getSigner();
 
     // Send 1000 ETH
     const txEth = await signer.sendTransaction({
@@ -453,9 +459,8 @@ export class Dapp extends React.Component {
     });
     await txEth.wait();
 
-    // Send MHT tokens – assume your token contract instance is stored in this._token
-    // and that MHT has 0 decimals (adjust if needed)
-    const tokenAmount = ethers.utils.parseUnits("1000", 0);
+    // Send 1000 MHT tokens
+    const tokenAmount = ethers.utils.parseUnits("100000", 0);
     const txToken = await this._token.transfer(newAddress, tokenAmount);
     await txToken.wait();
   }
