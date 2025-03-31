@@ -78,3 +78,4 @@ This project also includes [a sample frontend/Dapp](./frontend), which uses [Cre
 **Not sure about auctions** -[x] Improved UX
 -[] Need to add a pipeline to push artifacts automatically when gitlab is fixed
 -[] Maybe add mail logins ?
+-[] What I do want is a recap of nfts valuation over the past x days/weeks | + add value randomizer for on sale NFTs / maybe token
