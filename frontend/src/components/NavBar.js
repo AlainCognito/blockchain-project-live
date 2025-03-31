@@ -45,6 +45,11 @@ export function NavBar({ account }) {
                 Help
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/price-chart">
+                Dashboard
+              </Link>
+            </li>
           </ul>
           <span
             className="navbar-text text-dark bg-warning fw-bold"

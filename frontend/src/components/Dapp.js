@@ -282,6 +282,10 @@ export class Dapp extends React.Component {
     // We first initialize ethers by creating a provider using window.ethereum
     this._provider = new ethers.providers.Web3Provider(window.ethereum);
 
+    if (this.props.setProvider) {
+      this.props.setProvider(this._provider);
+    }
+
     // Then, we initialize the contract using that provider and the token's
     // artifact. You can do this same thing with your contracts.
     this._token = new ethers.Contract(
@@ -289,6 +293,10 @@ export class Dapp extends React.Component {
       TokenArtifact.abi,
       this._provider.getSigner(0)
     );
+
+    if (this.props.setTokenContractAddress) {
+      this.props.setTokenContractAddress(this._token.address);
+    }
 
     this._myNFT = new ethers.Contract(
       contractAddress.MyNFT,
