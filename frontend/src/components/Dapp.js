@@ -191,6 +191,7 @@ export class Dapp extends React.Component {
             Help
           </Link>
           <p>{this.state.reserves ? this.state.reserves.toString() : ""}</p>
+          <p>{this.state.price ? this.state.price.toString() : ""}</p>
         </div>
       </>
     );
@@ -223,6 +224,7 @@ export class Dapp extends React.Component {
     await this._initializeEthers();
     await this._getTokenData();
     await this._loadReserves();
+    await this._loadPrices();
     this._startPollingData();
   }
 
@@ -266,7 +268,14 @@ export class Dapp extends React.Component {
     }
   }
 
-
+  async _loadPrices() {
+    try {
+      const price = await this._exchange.getEthUsdPrice();
+      this.setState({ price });
+    } catch (error) {
+      console.error("Error loading prices:", error);
+    }
+  }
 
   async _updateBalance() {
     const balance = await this._token.balanceOf(this.state.selectedAddress);

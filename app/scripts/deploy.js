@@ -81,7 +81,15 @@ async function main() {
   await myNFTMarket.deployed();
   console.log("NFTMarket deployed to:", myNFTMarket.address);
 
-  const priceFeedAddress = "0x547a514d5e3769680Ce22B2361c10Ea13619e8a9";
+  const MockV3Aggregator = await ethers.getContractFactory("MockV3Aggregator");
+  // 8 decimals, initial answer = 3000 * 10^8 = 3000e8
+  const decimals = 8;
+  const initialAnswer = ethers.BigNumber.from("300000000000"); // 3000 * 10^8
+  const mockAggregator = await MockV3Aggregator.deploy(decimals, initialAnswer);
+  await mockAggregator.deployed();
+  console.log("MockAggregator deployed at:", mockAggregator.address);
+
+  const priceFeedAddress = mockAggregator.address;
 
 
   const PRICE = ethers.BigNumber.from("1000000000000000"); // 1,000,000,000,000 wei (0.001 ETH)
