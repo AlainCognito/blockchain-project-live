@@ -133,7 +133,7 @@ export function NFTMarketplace({
         listings[tokenId] = {
           seller: item.seller.toLowerCase(),
           // Use 0 decimals conversion instead of "ether"
-          price: ethers.utils.formatUnits(item.price, 6),
+          price: ethers.utils.formatUnits(item.price, 12),
           itemId: item.itemId.toString(),
         };
       }

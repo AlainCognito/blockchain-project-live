@@ -11,10 +11,9 @@ contract Token is ERC20 {
         owner = msg.sender;
         // Mint 1,000,000 tokens to the owner (reserve)
         _mint(owner, 10000000000000 * 10 ** decimals());
-        // Set an initial token price (e.g., 10^-6 ETH per token in wei)
     }
 
     function decimals() public view virtual override returns (uint8) {
-        return 6; // Set the number of decimals to 6
+        return 12; // Set the number of decimals to 6
     }
 }

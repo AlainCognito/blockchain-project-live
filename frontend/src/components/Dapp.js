@@ -110,7 +110,7 @@ export class Dapp extends React.Component {
               </h4>
               <p className="lead">
                 Welcome <b>{this.state.selectedAddress}</b>, you have{" "}
-                <b>{ethers.utils.formatUnits(this.state.balance, 6)} {this.state.tokenData.symbol}</b>.
+                <b>{ethers.utils.formatUnits(this.state.balance, 12)} {this.state.tokenData.symbol}</b>.
               </p>
             </div>
           </div>
@@ -143,15 +143,16 @@ export class Dapp extends React.Component {
                 </>
               ) : (
                 <>
+                  <ExchangeTokens
+                    onBuy={(ethAmount) => this._buyTokens(ethAmount)}
+                    onSell={(sellTokenAmount) => this._sellTokens(sellTokenAmount)}
+                  />
                   <Transfer
                     className="btn btn-secondary"
                     transferTokens={(to, amount) => this._transferTokens(to, amount)}
                     tokenSymbol={this.state.tokenData.symbol}
                   />
-                  <ExchangeTokens
-                    onBuy={(ethAmount) => this._buyTokens(ethAmount)}
-                    onSell={(sellTokenAmount) => this._sellTokens(sellTokenAmount)}
-                  />
+
                   {/* <Link to="/exchange-tokens" className="btn btn-success mr-2">
                     Buy JFP Tokens
                   </Link> */}
@@ -189,6 +190,7 @@ export class Dapp extends React.Component {
           <Link to="/help" className="btn custom-transparent-btn">
             Help
           </Link>
+          <p>{this.state.reserves ? this.state.reserves.toString() : ""}</p>
         </div>
       </>
     );
@@ -213,13 +215,14 @@ export class Dapp extends React.Component {
     this._initialize(selectedAddress);
   }
 
-  _initialize(userAddress) {
+  async _initialize(userAddress) {
     this.setState({ selectedAddress: userAddress });
     if (this.props.setAccount) {
       this.props.setAccount(userAddress);
     }
-    this._initializeEthers();
-    this._getTokenData();
+    await this._initializeEthers();
+    await this._getTokenData();
+    await this._loadReserves();
     this._startPollingData();
   }
 
@@ -248,12 +251,22 @@ export class Dapp extends React.Component {
     );
   }
 
-  /* Contract Data Methods */
   async _getTokenData() {
     const name = await this._token.name();
     const symbol = await this._token.symbol();
     this.setState({ tokenData: { name, symbol } });
   }
+
+  async _loadReserves() {
+    try {
+      const reserves = await this._exchange.getReserves();
+      this.setState({ reserves });
+    } catch (error) {
+      console.error("Error loading reserves:", error);
+    }
+  }
+
+
 
   async _updateBalance() {
     const balance = await this._token.balanceOf(this.state.selectedAddress);
@@ -274,7 +287,7 @@ export class Dapp extends React.Component {
   async _transferTokens(to, amount) {
     try {
       this._dismissTransactionError();
-      const parsedAmount = ethers.utils.parseUnits(amount.toString(), 6);
+      const parsedAmount = ethers.utils.parseUnits(amount.toString(), 12);
       const tx = await this._token.transfer(to, parsedAmount);
       this.setState({ txBeingSent: tx.hash });
       const receipt = await tx.wait();
@@ -325,7 +338,7 @@ export class Dapp extends React.Component {
   async _sellTokens(sellTokenAmount) {
     try {
       this._dismissTransactionError();
-      const amountToSell = ethers.utils.parseUnits(sellTokenAmount.toString(), 6);
+      const amountToSell = ethers.utils.parseUnits(sellTokenAmount.toString(), 12);
       const approveTx = await this._token.approve(this._exchange.address, amountToSell);
       await approveTx.wait();
       const tx = await this._exchange.sellTokens(amountToSell);

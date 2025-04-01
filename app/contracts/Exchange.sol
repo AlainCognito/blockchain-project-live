@@ -6,7 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract Exchange {
     Token public token;
     address public owner;
-    uint256 public price; // Price in wei per token
+    uint256 public price; // Price in wei per token (base unit)
+
     event TokensBought(
         address indexed buyer,
         uint256 ethSpent,
@@ -18,6 +19,7 @@ contract Exchange {
         uint256 ethReturned
     );
     event PriceUpdated(uint256 newPrice);
+    event LiquidityDeposited(uint256 tokensDeposited, uint256 ethDeposited);
 
     constructor(address _tokenAddress, uint256 _price) {
         token = Token(_tokenAddress);
@@ -33,27 +35,38 @@ contract Exchange {
 
     // Owner deposits liquidity: tokens from the owner's balance (via transferFrom)
     // and sends along ETH as liquidity.
-    // Before calling this function, the owner must approve the Exchange to spend their tokens.
     function depositLiquidity(uint256 tokenAmount) external payable {
         require(msg.sender == owner, "Only owner can deposit liquidity");
         require(
             token.transferFrom(owner, address(this), tokenAmount),
             "Token transfer failed"
         );
-        // ETH is sent along as msg.value.
+        emit LiquidityDeposited(tokenAmount, msg.value);
     }
 
-    // Users send ETH to buy tokens from the exchange.
+    // Returns the current token and ETH reserves held by this contract.
+    function getReserves()
+        public
+        view
+        returns (uint256 tokenReserve, uint256 ethReserve)
+    {
+        tokenReserve = IERC20(address(token)).balanceOf(address(this));
+        ethReserve = address(this).balance;
+    }
+
+    // Users send ETH to buy tokens.
+    // Calculation takes into account token decimals.
     function buyTokens() external payable {
         require(msg.value > 0, "Send ETH to buy tokens");
-        uint256 tokensToBuy = msg.value / price;
+        uint256 tokenDecimals = 10 ** token.decimals();
+        // Calculate how many tokens to buy in the token's smallest units.
+        uint256 tokensToBuy = (msg.value * tokenDecimals) / price;
         require(tokensToBuy > 0, "Not enough ETH sent to buy tokens");
         require(
             IERC20(address(token)).balanceOf(address(this)) >= tokensToBuy,
             "Not enough tokens in liquidity"
         );
 
-        // Transfer tokens from Exchange to buyer.
         require(
             token.transfer(msg.sender, tokensToBuy),
             "Token transfer failed"
@@ -61,33 +74,27 @@ contract Exchange {
         emit TokensBought(msg.sender, msg.value, tokensToBuy);
     }
 
-    // Users sell tokens in exchange for ETH.
-    // The user must first approve the exchange to transfer the tokens.
-    // Tokens received by the exchange can be considered “burned” or held as reserve.
+    // Users sell tokens (in base units) and receive ETH.
+    // Adjust calculation by token decimals.
     function sellTokens(uint256 tokensToSell) external {
         require(tokensToSell > 0, "Amount must be greater than 0");
-        uint256 ethToReturn = tokensToSell * price;
+        uint256 tokenDecimals = 10 ** token.decimals();
+        // Calculate the amount of ETH to return.
+        uint256 ethToReturn = (tokensToSell * price) / tokenDecimals;
         require(
             address(this).balance >= ethToReturn,
             "Not enough ETH in liquidity"
         );
 
-        // Transfer tokens from seller to Exchange.
         require(
             token.transferFrom(msg.sender, address(this), tokensToSell),
             "Token transfer failed"
         );
 
-        // Option 1: “Burn” tokens by sending them to address(0)
-        // token.transfer(address(0), tokensToSell);
-        // Option 2 (shown here): simply keep the tokens within the Exchange (reducing circulating supply)
-        // and update any metrics off-chain if desired.
-
-        // Transfer ETH to seller.
         payable(msg.sender).transfer(ethToReturn);
         emit TokensSold(msg.sender, tokensToSell, ethToReturn);
     }
 
-    // Allow the contract to receive ETH
+    // Allow the contract to receive ETH.
     receive() external payable {}
 }
