@@ -13,18 +13,17 @@ function App() {
   const [account, setAccount] = useState(null);
   const [provider, setProvider] = useState(null);
   const [tokenContractAddress, setTokenContractAddress] = useState(null);
+  const [exchangeContract, setExchangeContract] = useState(null);
 
   return (
     <Router>
       <NavBar account={account} />
       <Routes>
-        <Route path="*" element={<Dapp account={account} setAccount={setAccount} setProvider={setProvider} setTokenContractAddress={setTokenContractAddress}
-        />} />
+        <Route path="*" element={<Dapp account={account} setAccount={setAccount} setProvider={setProvider} setTokenContractAddress={setTokenContractAddress} />} />
         <Route path="/nft-marketplace" element={<NFTMarketplace />} />
         <Route path="/help" element={<Help />} />
         <Route path="/create-wallet" element={<CreateWallet />} />
         <Route path="/price-chart" element={<PriceChart provider={provider} tokenContractAddress={tokenContractAddress} />} />
-        <Route path="/exchange-tokens" element={<ExchangeTokens provider={provider} selectedAddress={account} />} />
       </Routes>
     </Router>
   );

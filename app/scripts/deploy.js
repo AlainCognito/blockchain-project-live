@@ -93,7 +93,7 @@ async function main() {
   // Owner approves Exchange to spend tokens for liquidity deposit.
   const tokenDecimals = await token.decimals();
   // For tokens with decimals 0, 1,000,000 tokens is simply "1000000"
-  const liquidityTokens = ethers.utils.parseUnits("1000000", tokenDecimals);
+  const liquidityTokens = ethers.utils.parseUnits("10", tokenDecimals);
   await token.approve(exchange.address, liquidityTokens);
   // Deposit liquidity: deposit 1,000,000 tokens and 1 ETH (which at the price gives a rate of 1 ETH per 1M tokens)
   await exchange.depositLiquidity(liquidityTokens, { value: ethers.utils.parseEther("1") });

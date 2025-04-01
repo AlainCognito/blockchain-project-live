@@ -13,7 +13,7 @@ contract Token is ERC20 {
         // Mint 1,000,000 tokens to the owner (reserve)
         _mint(owner, 1000000 * 10 ** decimals());
         // Set an initial token price (e.g., 10^-6 ETH per token in wei)
-        price = 10 ** 18; // 0.000001 ETH = 1e12 wei, since ETH = 1e18 wei
+        price = 10 ** 12; // 0.000001 ETH = 1e12 wei, since ETH = 1e18 wei
     }
 
     // Allows the owner to update price manually (or you can build an algorithm)
@@ -24,6 +24,6 @@ contract Token is ERC20 {
     }
 
     function decimals() public view virtual override returns (uint8) {
-        return 0; // Set the number of decimals to 6
+        return 6; // Set the number of decimals to 6
     }
 }
