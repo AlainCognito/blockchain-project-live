@@ -81,11 +81,14 @@ async function main() {
   await myNFTMarket.deployed();
   console.log("NFTMarket deployed to:", myNFTMarket.address);
 
+  const priceFeedAddress = "0x547a514d5e3769680Ce22B2361c10Ea13619e8a9";
+
+
   const PRICE = ethers.BigNumber.from("1000000000000000"); // 1,000,000,000,000 wei (0.001 ETH)
 
   // Deploy Exchange contract with token address and initial price
   const Exchange = await ethers.getContractFactory("Exchange");
-  const exchange = await Exchange.deploy(token.address, PRICE);
+  const exchange = await Exchange.deploy(token.address, PRICE, priceFeedAddress);
   await exchange.deployed();
   console.log("Exchange deployed to:", exchange.address);
 

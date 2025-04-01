@@ -3,10 +3,10 @@ FROM node:18-alpine as base
 
 WORKDIR /app
 # Copy package files and install dependencies
-COPY app/package*.json app/yarn.lock ./
+COPY app/package.json app/yarn.lock ./
 
+RUN apk add --no-cache git
 RUN yarn install
-
 # --- hardhat-node Target ---
 FROM base as hardhat-node
 
