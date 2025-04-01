@@ -6,6 +6,7 @@ import contractAddress from "../contracts/contract-address.json";
 export function ExchangeTokens({ provider, selectedAddress }) {
     const [ethAmount, setEthAmount] = useState("");
     const [txBeingSent, setTxBeingSent] = useState();
+    const [sellTokenAmount, setSellTokenAmount] = useState("");
 
     // Function to buy tokens
     async function buy() {
