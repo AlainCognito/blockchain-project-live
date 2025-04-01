@@ -110,7 +110,7 @@ export class Dapp extends React.Component {
               </h4>
               <p className="lead">
                 Welcome <b>{this.state.selectedAddress}</b>, you have{" "}
-                <b>{this.state.balance.toString()} {this.state.tokenData.symbol}</b>.
+                <b>{ethers.utils.formatUnits(this.state.balance, 6)} {this.state.tokenData.symbol}</b>.
               </p>
             </div>
           </div>
@@ -138,7 +138,7 @@ export class Dapp extends React.Component {
                   </Link> */}
                   <ExchangeTokens
                     onBuy={(ethAmount) => this._buyTokens(ethAmount)}
-                    onSell={(sellTokenAmount) => this._sellTokens(sellTokenAmount)}
+                    onlyBuy={true}
                   />
                 </>
               ) : (
@@ -274,7 +274,8 @@ export class Dapp extends React.Component {
   async _transferTokens(to, amount) {
     try {
       this._dismissTransactionError();
-      const tx = await this._token.transfer(to, amount);
+      const parsedAmount = ethers.utils.parseUnits(amount.toString(), 6);
+      const tx = await this._token.transfer(to, parsedAmount);
       this.setState({ txBeingSent: tx.hash });
       const receipt = await tx.wait();
       if (receipt.status === 0) throw new Error("Transaction failed");
@@ -324,7 +325,7 @@ export class Dapp extends React.Component {
   async _sellTokens(sellTokenAmount) {
     try {
       this._dismissTransactionError();
-      const amountToSell = ethers.utils.parseUnits(sellTokenAmount.toString(), 0);
+      const amountToSell = ethers.utils.parseUnits(sellTokenAmount.toString(), 6);
       const approveTx = await this._token.approve(this._exchange.address, amountToSell);
       await approveTx.wait();
       const tx = await this._exchange.sellTokens(amountToSell);

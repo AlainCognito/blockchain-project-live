@@ -11,7 +11,7 @@ contract Token is ERC20 {
     constructor() ERC20("Jeff Pesos", "JFP") {
         owner = msg.sender;
         // Mint 1,000,000 tokens to the owner (reserve)
-        _mint(owner, 1000000 * 10 ** decimals());
+        _mint(owner, 10000000000000 * 10 ** decimals());
         // Set an initial token price (e.g., 10^-6 ETH per token in wei)
         price = 10 ** 12; // 0.000001 ETH = 1e12 wei, since ETH = 1e18 wei
     }

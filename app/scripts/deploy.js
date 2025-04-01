@@ -38,7 +38,7 @@ async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
     console.log(`NFT ${tokenId} approved.`);
 
     // Set your desired fixed price; adjust units as required.
-    const price = ethers.utils.parseUnits("1000", 0);
+    const price = ethers.utils.parseUnits("100", 6);
 
     const approveTokenTx = await token.approve(myNFTMarket.address, price);
     await approveTokenTx.wait();
@@ -93,10 +93,10 @@ async function main() {
   // Owner approves Exchange to spend tokens for liquidity deposit.
   const tokenDecimals = await token.decimals();
   // For tokens with decimals 0, 1,000,000 tokens is simply "1000000"
-  const liquidityTokens = ethers.utils.parseUnits("10", tokenDecimals);
+  const liquidityTokens = ethers.utils.parseUnits("100000", tokenDecimals);
   await token.approve(exchange.address, liquidityTokens);
   // Deposit liquidity: deposit 1,000,000 tokens and 1 ETH (which at the price gives a rate of 1 ETH per 1M tokens)
-  await exchange.depositLiquidity(liquidityTokens, { value: ethers.utils.parseEther("1") });
+  await exchange.depositLiquidity(liquidityTokens, { value: ethers.utils.parseEther("5000") });
   console.log("Liquidity deposited to Exchange");
 
   // Proceed with minting NFTs and saving frontend files (unchanged)

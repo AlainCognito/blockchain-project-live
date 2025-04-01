@@ -6,14 +6,12 @@ import { Help } from "./components/Help";
 import { CreateWallet } from "./components/CreateWallet";
 import { NavBar } from "./components/NavBar";
 import { PriceChart } from "./components/PriceChart";
-import { ExchangeTokens } from "./components/ExchangeTokens";
 
 function App() {
 
   const [account, setAccount] = useState(null);
   const [provider, setProvider] = useState(null);
   const [tokenContractAddress, setTokenContractAddress] = useState(null);
-  const [exchangeContract, setExchangeContract] = useState(null);
 
   return (
     <Router>

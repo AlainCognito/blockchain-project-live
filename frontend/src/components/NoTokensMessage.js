@@ -5,7 +5,7 @@ export function NoTokensMessage({ selectedAddress }) {
     <>
       <p>You don't have tokens to transfer</p>
       <p>
-        To get some tokens, contact support and ask nicely
+        To get some tokens, contact support and ask nicely or buy some with ETH :
         <br />
       </p>
     </>

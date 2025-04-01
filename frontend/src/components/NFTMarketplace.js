@@ -133,7 +133,7 @@ export function NFTMarketplace({
         listings[tokenId] = {
           seller: item.seller.toLowerCase(),
           // Use 0 decimals conversion instead of "ether"
-          price: ethers.utils.formatUnits(item.price, 0),
+          price: ethers.utils.formatUnits(item.price, 6),
           itemId: item.itemId.toString(),
         };
       }
@@ -452,7 +452,7 @@ export function NFTMarketplace({
                     )}
                     <div className="card-body">
                       <h5 className="card-title">{nft.name || `NFT #${nft.tokenId}`}</h5>
-                      <p className="card-text">Price: {nft.price} MHT</p>
+                      <p className="card-text">Price: {nft.price} JFP</p>
                       <button className="btn btn-sm btn-warning" onClick={() => buyNFT(nft.itemId, nft.price)}>
                         Buy NFT
                       </button>
