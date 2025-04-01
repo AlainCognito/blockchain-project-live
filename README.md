@@ -76,8 +76,8 @@ This project also includes [a sample frontend/Dapp](./frontend), which uses [Cre
 -- I will be running both\
 **The App works great with multiple clients** -[x] Next step is building correct logic behind nft minting, giving some MHT to first connexions, making bids and auctions work...\
 **Not sure about auctions** -[x] Improved UX\
-~-[~] Need to add a pipeline to push artifacts automatically when gitlab is fixed | gitlab autorunner doesn't work (cant pull docker images)~\
--[] Maybe add mail logins ? | kinda irrelevant\
+-[~] Need to add a pipeline to push artifacts automatically when gitlab is fixed | gitlab autorunner doesn't work (cant pull docker images) \
+-[~] ~Maybe add mail logins ? | kinda irrelevant~\
 -[] What I do want is a recap of nfts valuation over the past x days/weeks | + add value randomizer for on sale NFTs / maybe token :\
 Step 1 : --[x] Related -> I need to set up a trade functionnality : accounts can trade ETH and JFP, in the end the value simulation of JFP will be a basic supply and demand law against the real value of ETH\
 \
