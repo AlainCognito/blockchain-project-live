@@ -199,11 +199,16 @@ export class Dapp extends React.Component {
                 </>
               )}
               {this.state.balance.gt(0) && (
-                <Transfer
-                  className="btn btn-secondary"
-                  transferTokens={(to, amount) => this._transferTokens(to, amount)}
-                  tokenSymbol={this.state.tokenData.symbol}
-                />
+                <>
+                  <Transfer
+                    className="btn btn-secondary"
+                    transferTokens={(to, amount) => this._transferTokens(to, amount)}
+                    tokenSymbol={this.state.tokenData.symbol}
+                  />
+                  <Link to="/exchange-tokens" className="btn btn-success mr-2">
+                    Buy JFP Tokens
+                  </Link>
+                </>
               )}
             </div>
           </div>

@@ -5,7 +5,7 @@ const path = require("path");
 
 async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
   const fs = require("fs");
-  const metadataDir=path.join(
+  const metadataDir = path.join(
     __dirname,
     "..",
     "..",
@@ -59,59 +59,55 @@ async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
 }
 
 async function main() {
-  // This is just a convenience check
-  if (network.name === "hardhat") {
-    console.warn(
-      "You are trying to deploy a contract to the Hardhat Network, which" +
-        "gets automatically created and destroyed every time. Use the Hardhat" +
-        " option '--network localhost'"
-    );
-  }
-
-  // ethers is available in the global scope
   const [deployer] = await ethers.getSigners();
-  console.log(
-    "Deploying the contracts with the account:",
-    await deployer.getAddress()
-  );
-
+  console.log("Deploying with account:", await deployer.getAddress());
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
+  // Deploy Token contract
   const Token = await ethers.getContractFactory("Token");
   const token = await Token.deploy();
   await token.deployed();
-
   console.log("Token address:", token.address);
 
+  // Deploy MyNFT and NFTMarket contracts (omitted details for brevity)
   const MyNFT = await ethers.getContractFactory("MyNFT");
   const myNFT = await MyNFT.deploy();
   await myNFT.deployed();
-
   console.log("MyNFT deployed to:", myNFT.address);
 
   const fee = 1;
-
   const NFTMarket = await ethers.getContractFactory("NFTMarket");
   const myNFTMarket = await NFTMarket.deploy(token.address, fee);
   await myNFTMarket.deployed();
   console.log("NFTMarket deployed to:", myNFTMarket.address);
 
-  await mintAllNFTs(myNFT, deployer, myNFTMarket, token);
+  // Set initial price: 1,000,000 tokens for 1 ETH => price = 1e18 / 1e6 = 1e12 wei per token.
+  const PRICE = ethers.BigNumber.from("1000000000000"); // 1e12 wei
 
-  // We also save the contract's artifacts and address in the frontend directory
-  saveFrontendFiles(token, myNFT, myNFTMarket);
+  // Deploy Exchange contract with token address and initial price
+  const Exchange = await ethers.getContractFactory("Exchange");
+  const exchange = await Exchange.deploy(token.address, PRICE);
+  await exchange.deployed();
+  console.log("Exchange deployed to:", exchange.address);
+
+  // Owner approves Exchange to spend tokens for liquidity deposit.
+  const tokenDecimals = await token.decimals();
+  // For tokens with decimals 0, 1,000,000 tokens is simply "1000000"
+  const liquidityTokens = ethers.utils.parseUnits("1000000", tokenDecimals);
+  await token.approve(exchange.address, liquidityTokens);
+  // Deposit liquidity: deposit 1,000,000 tokens and 1 ETH (which at the price gives a rate of 1 ETH per 1M tokens)
+  await exchange.depositLiquidity(liquidityTokens, { value: ethers.utils.parseEther("1") });
+  console.log("Liquidity deposited to Exchange");
+
+  // Proceed with minting NFTs and saving frontend files (unchanged)
+  await mintAllNFTs(myNFT, deployer, myNFTMarket, token);
+  saveFrontendFiles(token, myNFT, myNFTMarket, exchange);
 }
 
-function saveFrontendFiles(token, myNFT, nftMarket) {
+function saveFrontendFiles(token, myNFT, nftMarket, exchange) {
   const fs = require("fs");
-  const contractsDir = path.join(
-    __dirname,
-    "..",
-    "..",
-    "frontend",
-    "src",
-    "contracts"
-  );
+  const path = require("path");
+  const contractsDir = path.join(__dirname, "..", "..", "frontend", "src", "contracts");
 
   if (!fs.existsSync(contractsDir)) {
     fs.mkdirSync(contractsDir);
@@ -124,6 +120,7 @@ function saveFrontendFiles(token, myNFT, nftMarket) {
         Token: token.address,
         MyNFT: myNFT.address,
         NFTMarket: nftMarket.address,
+        Exchange: exchange.address,
       },
       undefined,
       2
@@ -131,25 +128,16 @@ function saveFrontendFiles(token, myNFT, nftMarket) {
   );
 
   const TokenArtifact = artifacts.readArtifactSync("Token");
-
-  fs.writeFileSync(
-    path.join(contractsDir, "Token.json"),
-    JSON.stringify(TokenArtifact, null, 2)
-  );
+  fs.writeFileSync(path.join(contractsDir, "Token.json"), JSON.stringify(TokenArtifact, null, 2));
 
   const MyNFTArtifact = artifacts.readArtifactSync("MyNFT");
-
-  fs.writeFileSync(
-    path.join(contractsDir, "MyNFT.json"),
-    JSON.stringify(MyNFTArtifact, null, 2)
-  );
+  fs.writeFileSync(path.join(contractsDir, "MyNFT.json"), JSON.stringify(MyNFTArtifact, null, 2));
 
   const NFTMarketArtifact = artifacts.readArtifactSync("NFTMarket");
+  fs.writeFileSync(path.join(contractsDir, "NFTMarket.json"), JSON.stringify(NFTMarketArtifact, null, 2));
 
-  fs.writeFileSync(
-    path.join(contractsDir, "NFTMarket.json"),
-    JSON.stringify(NFTMarketArtifact, null, 2)
-  );
+  const ExchangeArtifact = artifacts.readArtifactSync("Exchange");
+  fs.writeFileSync(path.join(contractsDir, "Exchange.json"), JSON.stringify(ExchangeArtifact, null, 2));
 }
 
 main()

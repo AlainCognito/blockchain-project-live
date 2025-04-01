@@ -50,6 +50,11 @@ export function NavBar({ account }) {
                 Dashboard
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/exchange-tokens">
+                ExchangeZone
+              </Link>
+            </li>
           </ul>
           <span
             className="navbar-text text-dark bg-warning fw-bold"

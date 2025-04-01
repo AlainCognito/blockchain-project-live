@@ -1,27 +1,30 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
-import TokenArtifact from "../contracts/Token.json";
+// Use the Exchange artifact instead of Token.
+import ExchangeArtifact from "../contracts/Exchange.json";
 import contractAddress from "../contracts/contract-address.json";
 
 export function ExchangeTokens({ provider, selectedAddress }) {
     const [ethAmount, setEthAmount] = useState("");
-    const [txBeingSent, setTxBeingSent] = useState();
     const [sellTokenAmount, setSellTokenAmount] = useState("");
+    const [txBeingSent, setTxBeingSent] = useState("");
 
-    // Function to buy tokens
+    // Function to buy tokens from the exchange.
     async function buy() {
         if (!provider || !selectedAddress) return;
         try {
-            // Get signer and create token contract instance.
             const signer = provider.getSigner();
-            const tokenContract = new ethers.Contract(contractAddress.Token, TokenArtifact.abi, signer);
-
+            const exchangeContract = new ethers.Contract(
+                contractAddress.Exchange,
+                ExchangeArtifact.abi,
+                signer
+            );
             // Convert ETH amount to wei.
             const value = ethers.utils.parseEther(ethAmount.toString());
-            const tx = await tokenContract.buyTokens({ value });
+            const tx = await exchangeContract.buyTokens({ value });
             setTxBeingSent(tx.hash);
             await tx.wait();
-            setTxBeingSent(undefined);
+            setTxBeingSent("");
             alert("Tokens purchased successfully!");
         } catch (error) {
             console.error("Error buying tokens:", error);
@@ -29,23 +32,19 @@ export function ExchangeTokens({ provider, selectedAddress }) {
         }
     }
 
+    // Function to sell tokens via the exchange.
     async function sell() {
         if (!provider || !selectedAddress) return;
         try {
-            // Get signer and create token contract instance.
             const signer = provider.getSigner();
-            const tokenContract = new ethers.Contract(
-                contractAddress.Token,
-                TokenArtifact.abi,
+            const exchangeContract = new ethers.Contract(
+                contractAddress.Exchange,
+                ExchangeArtifact.abi,
                 signer
             );
-
-            // Convert token amount to sell into the proper units.
-            // Adjust the decimals if your token uses a different value.
-            const amountToSell = ethers.utils.parseUnits(sellTokenAmount.toString(), 18);
-
-            // Call the sellTokens function on your contract.
-            const tx = await tokenContract.sellTokens(amountToSell);
+            // Note: Since Token decimails are 0 (integer amounts), we use parseUnits without decimals.
+            const amountToSell = ethers.utils.parseUnits(sellTokenAmount.toString(), 0);
+            const tx = await exchangeContract.sellTokens(amountToSell);
             setTxBeingSent(tx.hash);
             await tx.wait();
             setTxBeingSent("");
