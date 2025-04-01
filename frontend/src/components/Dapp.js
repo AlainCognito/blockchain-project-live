@@ -191,7 +191,12 @@ export class Dapp extends React.Component {
           <div className="row">
             <div className="col-12">
               {this.state.balance.eq(0) && (
-                <NoTokensMessage selectedAddress={this.state.selectedAddress} />
+                <>
+                  <NoTokensMessage selectedAddress={this.state.selectedAddress} />
+                  <Link to="/buy-tokens" className="btn btn-success mr-2">
+                    Buy JFP Tokens
+                  </Link>
+                </>
               )}
               {this.state.balance.gt(0) && (
                 <Transfer

@@ -6,6 +6,7 @@ import { Help } from "./components/Help";
 import { CreateWallet } from "./components/CreateWallet";
 import { NavBar } from "./components/NavBar";
 import { PriceChart } from "./components/PriceChart";
+import { ExchangeTokens } from "./components/BuyTokens";
 
 function App() {
 
@@ -23,6 +24,7 @@ function App() {
         <Route path="/help" element={<Help />} />
         <Route path="/create-wallet" element={<CreateWallet />} />
         <Route path="/price-chart" element={<PriceChart provider={provider} tokenContractAddress={tokenContractAddress} />} />
+        <Route path="/buy-tokens" element={<ExchangeTokens provider={provider} selectedAddress={account} />} />
       </Routes>
     </Router>
   );
