@@ -30,7 +30,7 @@ contract Token is ERC20 {
     }
 
     function decimals() public view virtual override returns (uint8) {
-        return 0; // Set the number of decimals to 6
+        return 6; // Set the number of decimals to 6
     }
 
     // Buy tokens: buyer sends ETH, and receives tokens from the owner's reserve
