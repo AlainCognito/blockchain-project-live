@@ -3,9 +3,9 @@ FROM node:18-alpine as base
 
 WORKDIR /app
 # Copy package files and install dependencies
-COPY app/package*.json ./
+COPY app/package*.json app/yarn.lock ./
 
-RUN npm install
+RUN yarn install
 
 # --- hardhat-node Target ---
 FROM base as hardhat-node
