@@ -17,7 +17,7 @@ contract Token is ERC20 {
     constructor() ERC20("Jeff Pesos", "JFP") {
         owner = msg.sender;
         // Mint 1,000,000 tokens to the owner (reserve)
-        _mint(owner, 1000000);
+        _mint(owner, 1000000 * 10 ** decimals());
         // Set an initial token price (e.g., 10^-6 ETH per token in wei)
         price = 10 ** 12; // 0.000001 ETH = 1e12 wei, since ETH = 1e18 wei
     }
@@ -27,6 +27,10 @@ contract Token is ERC20 {
         require(msg.sender == owner, "Only owner can update price");
         price = newPrice;
         emit PriceUpdated(newPrice);
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 0; // Set the number of decimals to 6
     }
 
     // Buy tokens: buyer sends ETH, and receives tokens from the owner's reserve
