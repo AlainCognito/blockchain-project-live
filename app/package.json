@@ -36,6 +36,7 @@
     "solidity-coverage": "^0.8.2"
   },
   "dependencies": {
+    "@chainlink/local": "^0.2.4",
     "@openzeppelin/contracts": "^5.2.0"
   },
   "main": "hardhat.config.js",

@@ -2,11 +2,13 @@
 pragma solidity ^0.8.9;
 import "./Token.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@chainlink/local/src/data-feeds/interfaces/AggregatorV3Interface.sol";
 
 contract Exchange {
     Token public token;
     address public owner;
     uint256 public price; // Price in wei per token (base unit)
+    AggregatorV3Interface internal priceFeed;
 
     event TokensBought(
         address indexed buyer,
@@ -21,10 +23,11 @@ contract Exchange {
     event PriceUpdated(uint256 newPrice);
     event LiquidityDeposited(uint256 tokensDeposited, uint256 ethDeposited);
 
-    constructor(address _tokenAddress, uint256 _price) {
+    constructor(address _tokenAddress, uint256 _price, address _priceFeed) {
         token = Token(_tokenAddress);
         owner = msg.sender;
         price = _price;
+        priceFeed = AggregatorV3Interface(_priceFeed);
     }
 
     function updatePrice(uint256 newPrice) public {
@@ -93,6 +96,26 @@ contract Exchange {
 
         payable(msg.sender).transfer(ethToReturn);
         emit TokensSold(msg.sender, tokensToSell, ethToReturn);
+    }
+
+    function getEthUsdPrice() public view returns (int) {
+        (, int priceUSD, , , ) = priceFeed.latestRoundData();
+        return priceUSD;
+    }
+
+    function getTokenPriceInUsd() public view returns (uint256) {
+        // token.price is in wei per token.
+        // Convert token price to ETH price using token decimals.
+        uint256 tokenDecimals = 10 ** token.decimals(); // e.g. 1e12
+        // Price per token in ETH (in wei) is: price / tokenDecimals
+        // Now, get ETH/USD value (Chainlink price has 8 decimals)
+        int ethPriceUSD = getEthUsdPrice(); // e.g. 3000 * 1e8
+        // Calculate the token price in USD (in a comparable precision); for simplicity,
+        // you can perform the multiplication and division off-chain or adjust scaling factors.
+        // For example:
+        uint256 tokenPriceInEth = price; // price is in wei
+        // Convert to a human-friendly format off-chain or using further scaling on-chain.
+        return uint256(ethPriceUSD); // placeholder, adjust with proper dec calculation.
     }
 
     // Allow the contract to receive ETH.
