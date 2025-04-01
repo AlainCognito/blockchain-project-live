@@ -4,3 +4,4 @@ cache
 artifacts
 .gitlab-ci.yml
 charts/** 
+*.bak
