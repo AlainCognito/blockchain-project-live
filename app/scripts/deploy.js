@@ -81,8 +81,7 @@ async function main() {
   await myNFTMarket.deployed();
   console.log("NFTMarket deployed to:", myNFTMarket.address);
 
-  // Set initial price: 1,000,000 tokens for 1 ETH => price = 1e18 / 1e6 = 1e12 wei per token.
-  const PRICE = ethers.BigNumber.from("1000000000000"); // 1e12 wei
+  const PRICE = ethers.BigNumber.from("1000000000000"); // 1,000,000,000,000 wei (0.001 ETH)
 
   // Deploy Exchange contract with token address and initial price
   const Exchange = await ethers.getContractFactory("Exchange");

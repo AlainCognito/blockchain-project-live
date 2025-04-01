@@ -17,11 +17,18 @@ contract Exchange {
         uint256 tokensSold,
         uint256 ethReturned
     );
+    event PriceUpdated(uint256 newPrice);
 
     constructor(address _tokenAddress, uint256 _price) {
         token = Token(_tokenAddress);
         owner = msg.sender;
         price = _price;
+    }
+
+    function updatePrice(uint256 newPrice) public {
+        require(msg.sender == owner, "Only owner can update price");
+        price = newPrice;
+        emit PriceUpdated(newPrice);
     }
 
     // Owner deposits liquidity: tokens from the owner's balance (via transferFrom)
