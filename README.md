@@ -9,7 +9,7 @@ This project is intended to be used with the
 able to follow it by yourself by reading the README and exploring its
 `contracts`, `tests`, `scripts` and `frontend` directories.
 
-This Project relies on : -For the backend- Docker to contenairize (?) both running the local node and ngrok to produce a valid RPC url for it without having to mind about port forwarding, and -For the frontend - vercel to host and deploy the ~static~ frontend. The contracts addresses are updated by a wrapper after every deployment.
+This Project relies on : -For the backend- Docker to contenairize (?) both running the local node and ngrok to produce a valid RPC url for it without having to mind about port forwarding, and -For the frontend - vercel to host and deploy the static frontend. The contracts addresses are updated by a wrapper after every deployment.
 
 ## Quick start
 
@@ -76,7 +76,10 @@ This project also includes [a sample frontend/Dapp](./frontend), which uses [Cre
 -- I will be running both
 **The App works great with multiple clients** -[x] Next step is building correct logic behind nft minting, giving some MHT to first connexions, making bids and auctions work...
 **Not sure about auctions** -[x] Improved UX
--[] Need to add a pipeline to push artifacts automatically when gitlab is fixed
--[] Maybe add mail logins ?
--[] What I do want is a recap of nfts valuation over the past x days/weeks | + add value randomizer for on sale NFTs / maybe token
---[] Related -> I need to set up a trade functionnality : accounts can trade ETH and JFP, in the end the value simulation of JFP will be a basic supply and demand law against the real value of ETH
+~-[~] Need to add a pipeline to push artifacts automatically when gitlab is fixed | gitlab autorunner doesn't work (cant pull docker images)~
+-[] Maybe add mail logins ? | kinda irrelevant
+-[] What I do want is a recap of nfts valuation over the past x days/weeks | + add value randomizer for on sale NFTs / maybe token :
+Step 1 : --[x] Related -> I need to set up a trade functionnality : accounts can trade ETH and JFP, in the end the value simulation of JFP will be a basic supply and demand law against the real value of ETH
+
+UX Tweaks :
+-[] Need to update App account on account change, need to reset it on page reload (will maybe need to change whole logic)
