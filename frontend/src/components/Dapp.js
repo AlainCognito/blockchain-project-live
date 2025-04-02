@@ -7,6 +7,7 @@ import TokenArtifact from "../contracts/Token.json";
 import MyNFTArtifact from "../contracts/MyNFT.json";
 import ExchangeArtifact from "../contracts/Exchange.json";
 import contractAddress from "../contracts/contract-address.json";
+import NFTMarketArtifact from "../contracts/NFTMarket.json";
 
 import { NoWalletDetected } from "./NoWalletDetected";
 import { ConnectWallet } from "./ConnectWallet";
@@ -46,6 +47,7 @@ export class Dapp extends React.Component {
       if (accounts.length > 0) {
         this._initialize(accounts[0]);
       }
+      // Lift the _connectWallet method to App so NavBar can call it.
     }
   }
 
@@ -201,7 +203,11 @@ export class Dapp extends React.Component {
   handleAccountsChanged = (accounts) => {
     this._stopPollingData();
     if (accounts.length === 0) {
+      // When wallet disconnects, clear state and notify App
       this._resetState();
+      if (this.props.setAccount) {
+        this.props.setAccount(null);
+      }
     } else {
       this._initialize(accounts[0]);
     }
@@ -217,46 +223,112 @@ export class Dapp extends React.Component {
   }
 
   async _initialize(userAddress) {
-    this.setState({ selectedAddress: userAddress });
-    if (this.props.setAccount) {
-      this.props.setAccount(userAddress);
-    }
-    await this._initializeEthers();
-    await this._getTokenData();
-    await this._loadReserves();
-    await this._loadPrices();
-    this._startPollingData();
+    // Update state and then initialize contracts in the callback to ensure state is updated
+    this.setState({ selectedAddress: userAddress }, async () => {
+      if (this.props.setAccount) {
+        this.props.setAccount(userAddress);
+      }
+      await this._initializeEthers();
+      await this._getTokenData();
+      await this._loadReserves();
+      await this._loadPrices();
+      this._startPollingData();
+    });
   }
 
   async _initializeEthers() {
+    // Use the updated selectedAddress from state
+    if (!this.state.selectedAddress) return;
+
     this._provider = new ethers.providers.Web3Provider(window.ethereum);
     if (this.props.setProvider) {
       this.props.setProvider(this._provider);
     }
-    this._token = new ethers.Contract(
-      contractAddress.Token,
-      TokenArtifact.abi,
-      this._provider.getSigner(0)
-    );
-    if (this.props.setTokenContractAddress) {
-      this.props.setTokenContractAddress(this._token.address);
+
+    // Check if there are any accounts available
+    const accounts = await this._provider.listAccounts();
+    if (accounts.length === 0) {
+      console.error("No accounts available. Please reconnect your wallet.");
+      return;
     }
-    this._myNFT = new ethers.Contract(
-      contractAddress.MyNFT,
-      MyNFTArtifact.abi,
-      this._provider.getSigner(0)
-    );
-    this._exchange = new ethers.Contract(
-      contractAddress.Exchange,
-      ExchangeArtifact.abi,
-      this._provider.getSigner(0)
-    );
+
+    try {
+      const signer = this._provider.getSigner();
+      // Optionally verify that the signer address matches your saved one:
+      const signerAddress = await signer.getAddress();
+      if (
+        !this.state.selectedAddress ||
+        signerAddress.toLowerCase() !== this.state.selectedAddress.toLowerCase()
+      ) {
+        console.error("Signer mismatch. Please reconnect your wallet.");
+        return;
+      }
+
+      // Instantiate contracts with the valid signer
+      this._token = new ethers.Contract(
+        contractAddress.Token,
+        TokenArtifact.abi,
+        signer
+      );
+      this._exchange = new ethers.Contract(
+        contractAddress.Exchange,
+        ExchangeArtifact.abi,
+        signer
+      );
+      this._myNFT = new ethers.Contract(
+        contractAddress.MyNFT,
+        MyNFTArtifact.abi,
+        signer
+      );
+
+      // ... inside your _initializeEthers (or similar) after getting the signer
+      const myNFT = new ethers.Contract(
+        contractAddress.MyNFT,
+        MyNFTArtifact.abi,
+        signer
+      );
+      const nftMarket = new ethers.Contract(
+        contractAddress.NFTMarket,
+        NFTMarketArtifact.abi,
+        signer
+      );
+      const tokenContractInstance = new ethers.Contract(
+        contractAddress.Token,
+        TokenArtifact.abi,
+        signer
+      );
+
+      // Update parent App via setters provided in props
+      if (this.props.setMyNFTContract) {
+        this.props.setMyNFTContract(myNFT);
+      }
+      if (this.props.setNftMarketContract) {
+        this.props.setNftMarketContract(nftMarket);
+      }
+      if (this.props.setTokenContract) {
+        this.props.setTokenContract(tokenContractInstance);
+      }
+
+      if (this.props.setTokenContractAddress) {
+        this.props.setTokenContractAddress(this._token.address);
+      }
+    } catch (error) {
+      console.error("Error initializing ethers:", error);
+    }
   }
 
   async _getTokenData() {
-    const name = await this._token.name();
-    const symbol = await this._token.symbol();
-    this.setState({ tokenData: { name, symbol } });
+    if (!this._token) {
+      console.error("Token contract instance is undefined.");
+      return;
+    }
+    try {
+      const name = await this._token.name();
+      const symbol = await this._token.symbol();
+      this.setState({ tokenData: { name, symbol } });
+    } catch (error) {
+      console.error("Error getting token data:", error);
+    }
   }
 
   async _loadReserves() {
@@ -278,8 +350,22 @@ export class Dapp extends React.Component {
   }
 
   async _updateBalance() {
-    const balance = await this._token.balanceOf(this.state.selectedAddress);
-    this.setState({ balance });
+    // Guard: ensure the token contract is instantiated and selectedAddress is available
+    if (!this._token) {
+      console.error("_token is not initialized. Aborting balance update.");
+      return;
+    }
+    if (!this.state.selectedAddress) {
+      console.error("selectedAddress is undefined. Aborting balance update.");
+      return;
+    }
+
+    try {
+      const balance = await this._token.balanceOf(this.state.selectedAddress);
+      this.setState({ balance });
+    } catch (error) {
+      console.error("Error updating balance:", error);
+    }
   }
 
   _startPollingData() {
