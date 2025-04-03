@@ -82,9 +82,10 @@ This project also includes [a sample frontend/Dapp](./frontend), which uses [Cre
 Step 1 : --[x] Related -> I need to set up a trade functionnality : accounts can trade ETH and JFP, in the end the value simulation of JFP will be a basic supply and demand law against the real value of ETH\
 Step 2 : --[x] Fetching tokens value against ETH (node) value, can do the same for NFTs\
 Step + : --[] Need to implement token ETH change rate algorithm + can adapt ETH usd value with MockAggregator\
+(?)-[] Still havent implemented auctions and bidding
 
 \
 UX Tweaks :\
 -[x] Need to update App account on account change, need to reset it on page reload (will maybe need to change whole logic)\
 --[] Related -> need to actually load NFTMarket on page reload\
--[] Need to find a way to display USD value of stuff when relevant\
+-[] Need to find a way to display USD value of stuff when relevant
