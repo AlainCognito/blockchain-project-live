@@ -98,7 +98,7 @@ async function main() {
   const liquidityTokens = ethers.utils.parseUnits("1000001", tokenDecimals);
   await token.approve(exchange.address, liquidityTokens);
   // Deposit liquidity: deposit 1,000,000 tokens and 1 ETH(which at the price gives a rate of 1 ETH per 1M tokens)
-  await exchange.depositLiquidity(liquidityTokens, { value: ethers.utils.parseEther("000") });
+  await exchange.depositLiquidity(liquidityTokens, { value: ethers.utils.parseEther("9000") });
   console.log("Liquidity deposited to Exchange");
 
   // Proceed with minting NFTs and saving frontend files (unchanged)
