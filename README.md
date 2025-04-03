@@ -89,3 +89,4 @@ UX Tweaks :\
 -[x] Need to update App account on account change, need to reset it on page reload (will maybe need to change whole logic)\
 --[] Related -> need to actually load NFTMarket on page reload\
 -[] Need to find a way to display USD value of stuff when relevant
+-[] After im done with Token and ETH rate charts I want to display a value recap of NFT (chart previous prices)
