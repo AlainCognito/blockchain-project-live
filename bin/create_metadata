@@ -1,24 +1,31 @@
 #!/bin/sh
-images_dir="../frontend/public/images"
-metadata_dir="../frontend/public/metadata"
+# filepath: /home/alain/Projects/blockchain/bin/create_metadata
+
+metadata_dir="./metadata"
 
 # Create metadata directory if it doesn't exist
 mkdir -p "$metadata_dir"
 
-for image in "$images_dir"/*; do
-    [ -f "$image" ] || continue
-    image_name=$(basename "$image")
-    # Remove the file extension
-    description="${image_name%.jpg}"
-    # Remove newline and spaces from the image name
+# Process each line in names.txt
+while IFS= read -r image_name || [ -n "$image_name" ]; do
+    # Skip empty lines
+    [ -z "$image_name" ] && continue
+
+    # Remove whitespace/newlines from the image name
     trimmed_name=$(printf "%s" "$image_name" | tr -d '\n\r ')
-    # Use -w0 to avoid newline wrapping in the base64 output
-    encoded_name=$(printf "%s" "$trimmed_name" | base64 -w0)
-    # Remove any accidental spaces/newlines and take the last 16 characters
-    nft_name=$(printf "%s" "$encoded_name" | tr -d '\n\r= ' | tr -d "="| tail -c 16 )
-    metadata_file="$metadata_dir/${image_name}.json"
-    url="https://blockchain-project-live.vercel.app/images/$image_name"
     
+    # Generate a description by stripping the file extension (works for any extension)
+    description="${trimmed_name%.*}"
+    
+    # Base64 encode the trimmed name and take the last 16 characters for the NFT name
+    encoded_name=$(printf "%s" "$trimmed_name" | base64 -w0)
+    nft_name=$(printf "%s" "$encoded_name" | tr -d '\n\r= ' | tail -c 16)
+    
+    # Define the output metadata file and image URL
+    metadata_file="$metadata_dir/${trimmed_name}.json"
+    url="ipfs://bafybeihv4iknmw6kzzjdrm2gc2tbifjxbiap54awecdrmrrjk3jd67ezaq/images/${trimmed_name}"
+    
+    # Write valid JSON metadata
     cat <<EOF > "$metadata_file"
 {
   "name": "$nft_name",
@@ -26,4 +33,5 @@ for image in "$images_dir"/*; do
   "image": "$url"
 }
 EOF
-done
+
+done < ./names.txt

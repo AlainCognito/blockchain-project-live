@@ -20,3 +20,10 @@ CMD ["npx", "hardhat", "node", "--hostname", "0.0.0.0"]
 FROM wernight/ngrok:latest as ngrok 
 USER root
 RUN apk add jq
+
+# # --- IPFS Target ---
+# FROM ipfs/kubo:v0.34.1 as ipfs
+# RUN mkdir -p /container-init.d
+# # Copy your custom ipfs entrypoint script into container-init.d
+# COPY bin/ipfs_entrypoint.sh /container-init.d/ipfs_entrypoint.sh
+# RUN chmod +x /container-init.d/ipfs_entrypoint.sh

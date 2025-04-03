@@ -1,0 +1,7 @@
+#!/bin/sh
+# Wrapper to launch docker containers and run the command
+export DEPLOY="docker-compose exec hardhat-node npx -c 'hardhat run --network localhost scripts/deploy.js'"
+export URL="docker-compose exec ngrok sh -c '/frontend/bin/get_public_url'"
+
+docker-compose exec ngrok sh -c "/frontend/bin/get_public_url"
+docker-compose exec hardhat-node npx -c "hardhat run --network localhost scripts/deploy.js"

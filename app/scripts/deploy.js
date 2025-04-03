@@ -2,57 +2,49 @@
 // yours, or create new ones.
 
 const path = require("path");
+const fs = require("fs");
 
 async function mintAllNFTs(myNFT, deployer, myNFTMarket, token) {
-  const fs = require("fs");
-  const metadataDir = path.join(
-    __dirname,
-    "..",
-    "..",
-    "frontend",
-    "public",
-    "metadata"
-  );
+  // Base URL and extension for the remote metadata files.
+  // If your metadata files are stored in a subfolder, add it here (e.g., "ipfs://.../metadata/")
+  const base_url = "ipfs://bafybeigl6tkcla3dqzwqfgvcatw4lyj5p64xwknnmcf5vpuichrttwcq3q/";
+  const base_extension = ".json";
 
-  const remote_path = "https://blockchain-project-live.vercel.app/metadata/";
+  // Read and split names.txt (adjust path as needed)
+  const namesFilePath = require("path").join(__dirname, "..", "names.txt");
+  const namesContent = require("fs").readFileSync(namesFilePath, "utf8");
+  const names = namesContent.split(/\r?\n/).filter((line) => line.trim() !== "");
 
-  // Read all JSON files in the metadata folder
-  const files = fs
-    .readdirSync(metadataDir)
-    .filter((file) => file.endsWith(".json"));
+  // Iterate over each line from names.txt
+  for (const name of names) {
+    // Trim extra whitespace. Then remove all spaces to match your metadata naming convention.
+    const trimmedName = name.trim();
+    const sanitizedName = trimmedName.replace(/\s/g, "");
+    // Construct the remote_address: e.g. "ipfs://.../DALL·E2024-12-1010.41.49-Ayellowrubberduck...Th.jpg.json"
+    const remote_address = base_url + sanitizedName + base_extension;
 
-  console.log("Minting NFTs...");
-  for (const file of files) {
-    const remote_address = remote_path + file;
-    console.log(`${remote_address}`);
+    console.log(`Minting NFT with metadata URL: ${remote_address}`);
 
+    // Mint the NFT using the remote_address
     const tx = await myNFT.mintNFT(deployer.address, remote_address);
     const receipt = await tx.wait();
-    console.log(`NFT minted successfully.`);
+    console.log(`NFT minted successfully for ${remote_address}.`);
 
-    const tokenId = receipt.events.find((event) => event.event === "Transfer")
-      .args.tokenId;
+    // Retrieve tokenId from Transfer event
+    const tokenId = receipt.events.find((event) => event.event === "Transfer").args.tokenId;
 
+    // Approve marketplace transfers
     const approveTx = await myNFT.approve(myNFTMarket.address, tokenId);
     await approveTx.wait();
     console.log(`NFT ${tokenId} approved.`);
 
-    // Set your desired fixed price; adjust units as required.
+    // Set your desired fixed price (adjust unit if needed)
     const price = ethers.utils.parseUnits("10000", 12);
-
     const approveTokenTx = await token.approve(myNFTMarket.address, price);
     await approveTokenTx.wait();
+    console.log(`Creating market listing for NFT ${tokenId} at price ${price}...`);
 
-    console.log(
-      `Creating market listing for NFT ${tokenId} at price ${price}...`
-    );
-
-    const listTx = await myNFTMarket.createMarketItem(
-      myNFT.address,
-      tokenId,
-      price
-    );
-
+    const listTx = await myNFTMarket.createMarketItem(myNFT.address, tokenId, price);
     await listTx.wait();
     console.log(`NFT ${tokenId} listed successfully.`);
   }

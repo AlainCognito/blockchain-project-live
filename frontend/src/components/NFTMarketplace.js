@@ -39,6 +39,9 @@ export function NFTMarketplace({
         } catch (err) {
           console.error(`Error fetching tokenURI for token ${tokenId}:`, err);
         }
+        if (tokenURI.startsWith("ipfs://")) {
+          tokenURI = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/");
+        }
         let metadata = {};
         try {
           const res = await fetch(tokenURI);
@@ -291,9 +294,9 @@ export function NFTMarketplace({
                     {nft.image && (
                       <img
                         src={
-                          nft.image.startsWith("http")
-                            ? nft.image
-                            : `https://${nft.image}`
+                          nft.image.startsWith("ipfs://")
+                            ? nft.image.replace("ipfs://", "https://ipfs.io/ipfs/")
+                            : nft.image
                         }
                         className="card-img-top"
                         alt={nft.name || `NFT ${nft.tokenId}`}
@@ -359,9 +362,9 @@ export function NFTMarketplace({
                           {nft.image && (
                             <img
                               src={
-                                nft.image.startsWith("http")
-                                  ? nft.image
-                                  : `https://${nft.image}`
+                                nft.image.startsWith("ipfs://")
+                                  ? nft.image.replace("ipfs://", "https://ipfs.io/ipfs/")
+                                  : nft.image
                               }
                               className="card-img-top"
                               alt={nft.name || `NFT ${nft.tokenId}`}
@@ -404,9 +407,9 @@ export function NFTMarketplace({
                           {nft.image && (
                             <img
                               src={
-                                nft.image.startsWith("http")
-                                  ? nft.image
-                                  : `https://${nft.image}`
+                                nft.image.startsWith("ipfs://")
+                                  ? nft.image.replace("ipfs://", "https://ipfs.io/ipfs/")
+                                  : nft.image
                               }
                               className="card-img-top"
                               alt={
@@ -463,9 +466,9 @@ export function NFTMarketplace({
                           {nft.image && (
                             <img
                               src={
-                                nft.image.startsWith("http")
-                                  ? nft.image
-                                  : `https://${nft.image}`
+                                nft.image.startsWith("ipfs://")
+                                  ? nft.image.replace("ipfs://", "https://ipfs.io/ipfs/")
+                                  : nft.image
                               }
                               className="card-img-top"
                               alt={nft.name || `NFT ${nft.tokenId}`}
