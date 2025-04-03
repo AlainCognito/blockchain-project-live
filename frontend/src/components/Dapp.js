@@ -49,7 +49,6 @@ export class Dapp extends React.Component {
       if (accounts.length > 0) {
         this._initialize(accounts[0]);
       }
-      // Lift the _connectWallet method to App so NavBar can call it.
     }
   }
 
@@ -301,9 +300,15 @@ export class Dapp extends React.Component {
       if (this.props.setTokenContract) {
         this.props.setTokenContract(this._token);
       }
-
       if (this.props.setTokenContractAddress) {
         this.props.setTokenContractAddress(this._token.address);
+      }
+      if (this.props.setUSDperToken) {
+        const ethPrice = await this._getEthUsdPrice();
+        const tokenPrice = await this._getTokenPriceinETH();
+        const usdPerToken = parseFloat(ethers.utils.formatUnits(ethPrice, 8)) / parseFloat(ethers.utils.formatEther(tokenPrice));
+        this.props.setUSDperToken(usdPerToken);
+        console.log("USD per token:", usdPerToken, "ETH price:", ethers.utils.formatUnits(ethPrice, 8), "Token price in ETH:", ethers.utils.formatEther(tokenPrice));
       }
 
     } catch (error) {
@@ -347,7 +352,7 @@ export class Dapp extends React.Component {
   async _getTokenPriceinETH() {
     try {
       const tokenPrice = await this._exchange.getTokenPrice();
-      this.setState({ tokenPrice });
+      return tokenPrice;
     } catch (error) {
       console.error("Error getting token price:", error);
     }

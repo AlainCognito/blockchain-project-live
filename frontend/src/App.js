@@ -15,6 +15,7 @@ function App() {
   const [myNFTContract, setMyNFTContract] = useState(null);
   const [nftMarketContract, setNftMarketContract] = useState(null);
   const [tokenContract, setTokenContract] = useState(null);
+  const [USDperToken, setUSDperToken] = useState(null);
 
   useEffect(() => {
     // Load account from localStorage on mount
@@ -61,6 +62,7 @@ function App() {
             setMyNFTContract={setMyNFTContract}       // pass setter props
             setNftMarketContract={setNftMarketContract}
             setTokenContract={setTokenContract}
+            setUSDperToken={setUSDperToken}
           />
         } />
         <Route
@@ -71,6 +73,7 @@ function App() {
               myNFTContract={myNFTContract}
               nftMarketContract={nftMarketContract}
               tokenContract={tokenContract}
+              USDperToken={USDperToken}
             />
           }
         />

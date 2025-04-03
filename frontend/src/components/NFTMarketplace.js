@@ -7,6 +7,7 @@ export function NFTMarketplace({
   nftMarketContract,
   tokenContract,
   account,
+  USDperToken,
 }) {
   const [nfts, setNfts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -304,7 +305,12 @@ export function NFTMarketplace({
                       <h5 className="card-title">
                         {nft.name || `NFT #${nft.tokenId}`}
                       </h5>
-                      <p className="card-text">Price: {nft.price} JFP</p>
+                      <p className="card-text">
+                        Price: {nft.price} JFP
+                        {USDperToken && (
+                          <> (≈ ${(parseFloat(nft.price) * USDperToken).toFixed(2)} USD)</>
+                        )}
+                      </p>
                       <button
                         className="btn btn-sm btn-warning"
                         onClick={() => buyNFT(nft.itemId, nft.price)}
@@ -595,22 +601,30 @@ export function NFTMarketplace({
                 </p>
               </div>
               {selectedNft.price && (
-                <div className="modal-footer">
-                  <button
-                    className="btn btn-sm btn-warning"
-                    onClick={() => {
-                      buyNFT(selectedNft.itemId, selectedNft.price);
-                      closeModal();
-                    }}
-                  >
-                    Buy NFT
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={closeModal}
-                  >
-                    Close
-                  </button>
+                <div className="modal-footer d-flex justify-content-between align-items-center">
+                  <p className="mb-0">
+                    Price: {selectedNft.price} JFP
+                    {USDperToken && (
+                      <> (≈ ${(parseFloat(selectedNft.price) * USDperToken).toFixed(2)} USD)</>
+                    )}
+                  </p>
+                  <div>
+                    <button
+                      className="btn btn-sm btn-warning me-2"
+                      onClick={() => {
+                        buyNFT(selectedNft.itemId, selectedNft.price);
+                        closeModal();
+                      }}
+                    >
+                      Buy NFT
+                    </button>
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      onClick={closeModal}
+                    >
+                      Close
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
