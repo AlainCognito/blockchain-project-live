@@ -8,6 +8,7 @@ import MyNFTArtifact from "../contracts/MyNFT.json";
 import ExchangeArtifact from "../contracts/Exchange.json";
 import contractAddress from "../contracts/contract-address.json";
 import NFTMarketArtifact from "../contracts/NFTMarket.json";
+import MockV3AggregatorArtifact from "../contracts/MockV3Aggregator.json";
 
 import { NoWalletDetected } from "./NoWalletDetected";
 import { ConnectWallet } from "./ConnectWallet";
@@ -30,6 +31,7 @@ export class Dapp extends React.Component {
       tokenData: undefined,
       selectedAddress: undefined,
       balance: undefined,
+      balanceInUSD: undefined,
       txBeingSent: undefined,
       transactionError: undefined,
       networkError: undefined,
@@ -112,7 +114,7 @@ export class Dapp extends React.Component {
               </h4>
               <p className="lead">
                 Welcome <b>{this.state.selectedAddress}</b>, you have{" "}
-                <b>{ethers.utils.formatUnits(this.state.balance, 12)} {this.state.tokenData.symbol}</b>.
+                <b>{ethers.utils.formatUnits(this.state.balance, 12)} {this.state.tokenData.symbol} for {this.state.balanceInUSD} $</b>.
               </p>
             </div>
           </div>
@@ -192,8 +194,6 @@ export class Dapp extends React.Component {
           <Link to="/help" className="btn custom-transparent-btn">
             Help
           </Link>
-          <p>{this.state.reserves ? this.state.reserves.toString() : ""}</p>
-          <p>{this.state.price ? this.state.price.toString() : ""}</p>
         </div>
       </>
     );
@@ -230,8 +230,8 @@ export class Dapp extends React.Component {
       }
       await this._initializeEthers();
       await this._getTokenData();
-      await this._loadReserves();
-      await this._loadPrices();
+      // await this._getReserves();
+      // await this._getEthUsdPrice();
       this._startPollingData();
     });
   }
@@ -280,38 +280,32 @@ export class Dapp extends React.Component {
         MyNFTArtifact.abi,
         signer
       );
-
-      // ... inside your _initializeEthers (or similar) after getting the signer
-      const myNFT = new ethers.Contract(
-        contractAddress.MyNFT,
-        MyNFTArtifact.abi,
-        signer
-      );
-      const nftMarket = new ethers.Contract(
+      this._nftMarket = new ethers.Contract(
         contractAddress.NFTMarket,
         NFTMarketArtifact.abi,
         signer
       );
-      const tokenContractInstance = new ethers.Contract(
-        contractAddress.Token,
-        TokenArtifact.abi,
+      this._mockAggregator = new ethers.Contract(
+        contractAddress.MockV3Aggregator,
+        MockV3AggregatorArtifact.abi,
         signer
       );
 
       // Update parent App via setters provided in props
       if (this.props.setMyNFTContract) {
-        this.props.setMyNFTContract(myNFT);
+        this.props.setMyNFTContract(this._myNFT);
       }
       if (this.props.setNftMarketContract) {
-        this.props.setNftMarketContract(nftMarket);
+        this.props.setNftMarketContract(this._nftMarket);
       }
       if (this.props.setTokenContract) {
-        this.props.setTokenContract(tokenContractInstance);
+        this.props.setTokenContract(this._token);
       }
 
       if (this.props.setTokenContractAddress) {
         this.props.setTokenContractAddress(this._token.address);
       }
+
     } catch (error) {
       console.error("Error initializing ethers:", error);
     }
@@ -331,26 +325,58 @@ export class Dapp extends React.Component {
     }
   }
 
-  async _loadReserves() {
+  // async _getReserves() {
+  //   try {
+  //     const reserves = await this._exchange.getReserves();
+  //     this.setState({ reserves });
+  //   } catch (error) {
+  //     console.error("Error loading reserves:", error);
+  //   }
+  // }
+
+  async _getEthUsdPrice() {
     try {
-      const reserves = await this._exchange.getReserves();
-      this.setState({ reserves });
+      const price = await this._exchange.getEthUsdPrice();
+      return price;
     } catch (error) {
-      console.error("Error loading reserves:", error);
+      console.error("Error loading prices:", error);
+      return ethers.BigNumber.from(0); // or handle error appropriately
     }
   }
 
-  async _loadPrices() {
+  async _getTokenPriceinETH() {
     try {
-      const price = await this._exchange.getEthUsdPrice();
-      this.setState({ price });
+      const tokenPrice = await this._exchange.getTokenPrice();
+      this.setState({ tokenPrice });
     } catch (error) {
-      console.error("Error loading prices:", error);
+      console.error("Error getting token price:", error);
+    }
+  }
+
+  async calculateTokenPriceinUSD(tokenAmount) {
+    try {
+      const tokenPriceWei = await this._exchange.getTokenPrice();
+      const ethPriceRaw = await this._getEthUsdPrice();
+      const tokenPriceInEth = parseFloat(ethers.utils.formatEther(tokenPriceWei));
+
+      // Check if tokenAmount is a BigNumber, if so format it, otherwise use it directly
+      let tokenAmountInTokens;
+      if (ethers.BigNumber.isBigNumber(tokenAmount)) {
+        tokenAmountInTokens = parseFloat(ethers.utils.formatUnits(tokenAmount, 12));
+      } else {
+        tokenAmountInTokens = parseFloat(tokenAmount);
+      }
+
+      const ethPriceInUsd = parseFloat(ethers.utils.formatUnits(ethPriceRaw, 8));
+      const usdValue = (tokenAmountInTokens * ethPriceInUsd) / tokenPriceInEth;
+      return usdValue;
+    } catch (error) {
+      console.error("Error calculating token price in USD:", error);
+      return 0;
     }
   }
 
   async _updateBalance() {
-    // Guard: ensure the token contract is instantiated and selectedAddress is available
     if (!this._token) {
       console.error("_token is not initialized. Aborting balance update.");
       return;
@@ -359,10 +385,12 @@ export class Dapp extends React.Component {
       console.error("selectedAddress is undefined. Aborting balance update.");
       return;
     }
-
     try {
       const balance = await this._token.balanceOf(this.state.selectedAddress);
+      // Update balance then calculate its USD value
       this.setState({ balance });
+      const usdValue = await this.calculateTokenPriceinUSD(balance);
+      this.setState({ balanceInUSD: usdValue });
     } catch (error) {
       console.error("Error updating balance:", error);
     }
@@ -448,6 +476,7 @@ export class Dapp extends React.Component {
       alert("Error selling tokens. See console for details.");
     }
   }
+
 
   /* Utility Methods */
   _dismissTransactionError() {

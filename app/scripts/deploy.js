@@ -106,15 +106,15 @@ async function main() {
   const liquidityTokens = ethers.utils.parseUnits("1000001", tokenDecimals);
   await token.approve(exchange.address, liquidityTokens);
   // Deposit liquidity: deposit 1,000,000 tokens and 1 ETH(which at the price gives a rate of 1 ETH per 1M tokens)
-  await exchange.depositLiquidity(liquidityTokens, { value: ethers.utils.parseEther("9000") });
+  await exchange.depositLiquidity(liquidityTokens, { value: ethers.utils.parseEther("000") });
   console.log("Liquidity deposited to Exchange");
 
   // Proceed with minting NFTs and saving frontend files (unchanged)
   await mintAllNFTs(myNFT, deployer, myNFTMarket, token);
-  saveFrontendFiles(token, myNFT, myNFTMarket, exchange);
+  saveFrontendFiles(token, myNFT, myNFTMarket, exchange, mockAggregator);
 }
 
-function saveFrontendFiles(token, myNFT, nftMarket, exchange) {
+function saveFrontendFiles(token, myNFT, nftMarket, exchange, mockAggregator) {
   const fs = require("fs");
   const path = require("path");
   const contractsDir = path.join(__dirname, "..", "..", "frontend", "src", "contracts");
@@ -131,6 +131,7 @@ function saveFrontendFiles(token, myNFT, nftMarket, exchange) {
         MyNFT: myNFT.address,
         NFTMarket: nftMarket.address,
         Exchange: exchange.address,
+        MockV3Aggregator: mockAggregator.address,
       },
       undefined,
       2
@@ -148,6 +149,9 @@ function saveFrontendFiles(token, myNFT, nftMarket, exchange) {
 
   const ExchangeArtifact = artifacts.readArtifactSync("Exchange");
   fs.writeFileSync(path.join(contractsDir, "Exchange.json"), JSON.stringify(ExchangeArtifact, null, 2));
+
+  const MockV3AggregatorArtifact = artifacts.readArtifactSync("MockV3Aggregator");
+  fs.writeFileSync(path.join(contractsDir, "MockV3Aggregator.json"), JSON.stringify(MockV3AggregatorArtifact, null, 2));
 }
 
 main()
