@@ -80,6 +80,11 @@ This project also includes [a sample frontend/Dapp](./frontend), which uses [Cre
 -[~] ~Maybe add mail logins ? | kinda irrelevant~\
 -[] What I do want is a recap of nfts valuation over the past x days/weeks | + add value randomizer for on sale NFTs / maybe token :\
 Step 1 : --[x] Related -> I need to set up a trade functionnality : accounts can trade ETH and JFP, in the end the value simulation of JFP will be a basic supply and demand law against the real value of ETH\
+Step 2 : --[x] Fetching tokens value against ETH (node) value, can do the same for NFTs\
+Step + : --[] Need to implement token ETH change rate algorithm + can adapt ETH usd value with MockAggregator\
+
 \
 UX Tweaks :\
--[] Need to update App account on account change, need to reset it on page reload (will maybe need to change whole logic)\
+-[x] Need to update App account on account change, need to reset it on page reload (will maybe need to change whole logic)\
+--[] Related -> need to actually load NFTMarket on page reload\
+-[] Need to find a way to display USD value of stuff when relevant\

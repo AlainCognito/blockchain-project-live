@@ -103,19 +103,9 @@ contract Exchange {
         return priceUSD;
     }
 
-    function getTokenPriceInUsd() public view returns (uint256) {
-        // token.price is in wei per token.
-        // Convert token price to ETH price using token decimals.
-        uint256 tokenDecimals = 10 ** token.decimals(); // e.g. 1e12
-        // Price per token in ETH (in wei) is: price / tokenDecimals
-        // Now, get ETH/USD value (Chainlink price has 8 decimals)
-        int ethPriceUSD = getEthUsdPrice(); // e.g. 3000 * 1e8
-        // Calculate the token price in USD (in a comparable precision); for simplicity,
-        // you can perform the multiplication and division off-chain or adjust scaling factors.
-        // For example:
-        uint256 tokenPriceInEth = price; // price is in wei
-        // Convert to a human-friendly format off-chain or using further scaling on-chain.
-        return uint256(ethPriceUSD); // placeholder, adjust with proper dec calculation.
+    function getTokenPrice() public view returns (uint256) {
+        uint256 tokenDecimals = 10 ** token.decimals();
+        return (price * 1e18) / tokenDecimals;
     }
 
     // Allow the contract to receive ETH.
