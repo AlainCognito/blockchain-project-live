@@ -2,12 +2,19 @@
 FROM node:18-alpine as base
 
 WORKDIR /app
+
 # Copy package files and install dependencies
-COPY app/package.json app/yarn.lock ./
+COPY app/hardhat.config.js app/package.json app/yarn.lock ./
+COPY app/contracts ./contracts
+COPY app/tasks ./tasks
+COPY app/scripts ./scripts
 
 RUN apk add git
-
 RUN yarn install
+
+# Pre-download the compiler and compile contracts
+RUN npx hardhat compile
+
 # --- hardhat-node Target ---
 FROM base as hardhat-node
 
