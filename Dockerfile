@@ -5,6 +5,8 @@ WORKDIR /app
 # Copy package files and install dependencies
 COPY app/package.json app/yarn.lock ./
 
+RUN apk add git
+
 RUN yarn install
 # --- hardhat-node Target ---
 FROM base as hardhat-node
